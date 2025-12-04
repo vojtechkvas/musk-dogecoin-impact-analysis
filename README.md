@@ -34,13 +34,13 @@ extract it
 Create virtual enviroment:
 
 ```bash
-python -m venv venv
+python3.11 -m venv venv-bipyt
 ```
 
 Start enviroment:
 
 ```bash
-source venv/bin/activate
+source venv-bipyt/bin/activate
 ```
 
 Install requiremnts:
@@ -49,7 +49,7 @@ Install requiremnts:
 pip install -r requirements.txt
 ```
 
-Export requiremnts:
+Export new requiremnts:
 
 ```bash
 pip freeze > requirements.txt
@@ -60,3 +60,8 @@ Stop enviroment:
 ```bash
 deactivate
 ```
+
+
+
+
+Quetion mohu používat poetry
