@@ -77,8 +77,15 @@ POSTS_DTYPES = {
     "retweet": "string",
 }
 
+DOGE_KEYWORDS = [  "@DOGE"]
+DOGE_KEYWORDS = [ "dogecoin" ]
 DOGE_KEYWORDS = ["doge", "dogecoin", "Ðoge", "Doge", "DOGE"]
+DEFAULT_DOGE_KEYWORDS="dogecoin"
+
 FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE = "2024-08-02"
+
+DOGE_MIN_DATE = "2019-07-05"
+DOGE_MAX_DATE = "2025-10-24"
 
 
 DASH_APP_TITLE = "Elon Musk & Dogecoin Impact Analysis"
