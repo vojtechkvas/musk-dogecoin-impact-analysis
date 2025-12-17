@@ -1,5 +1,3 @@
-# File: src/layout.py (UPDATED)
-
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import datetime as dt
@@ -33,6 +31,8 @@ def create_card(title, value_id, icon_class):
 
 
 initial_datetime = dt.datetime(2024, 1, 1, 10, 30).strftime("%Y-%m-%dT%H:%M")
+
+
 main_layout = dbc.Container(
     [
         dbc.Row(

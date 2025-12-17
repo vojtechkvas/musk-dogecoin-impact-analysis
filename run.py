@@ -1,4 +1,4 @@
-from src.app import app
+from src.dash.app import app
 
 if __name__ == '__main__':
     app.run(debug=True, port=8050)
