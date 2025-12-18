@@ -6,8 +6,8 @@ def layout():
     return dbc.Container([
         dbc.NavbarSimple(
             children=[
-                dbc.NavItem(dbc.NavLink("Home", href="/")),
-                dbc.NavItem(dbc.NavLink("Deep Analysis", href="/analysis")),
+                dbc.NavItem(dbc.NavLink("Home", href="/", active="exact")),
+                dbc.NavItem(dbc.NavLink("Deep Analysis", href="/analysis", active="exact")),
             ],
             brand="DOGE Tracker",
             color="primary",

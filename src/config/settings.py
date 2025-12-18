@@ -91,3 +91,7 @@ DOGE_MAX_DATE = "2025-10-24"
 DASH_APP_TITLE = "Elon Musk & Dogecoin Impact Analysis"
 SERVER_PORT = 8050
 PRIMARY_COLOR = "#FFA400"
+
+
+DOGECOIND_COLOR = "blue"
+TWEET_COLOR = "RED"

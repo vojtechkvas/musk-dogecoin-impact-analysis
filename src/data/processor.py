@@ -1,7 +1,7 @@
-from src.config.settings import DOGE_KEYWORDS, POSTS_TEXT, QUOTE_TEXT
+from src.config.settings import DOGE_KEYWORDS, POSTS_TEXT, QUOTE_TEXT, FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE
 import pandas as pd
 from pandas import DataFrame
-
+import datetime
 
 def get_tweets_related_to_dogecoin(
     df, doge_keywords=DOGE_KEYWORDS, text_column=POSTS_TEXT
@@ -57,3 +57,47 @@ def convert_datetime_to_unix_timestamp(
         df[new_column_name] = df[new_column_name].astype("int64")
 
     return df
+
+def convert_unix_timestamp_to_datetime(
+    df: DataFrame,
+    timestamp_column: str = "timestamp",
+    new_column_name: str = "created_at"
+) -> DataFrame:
+    """
+    Converts a Unix timestamp column (seconds) to a UTC-aware datetime column.
+
+    Args:
+        df: The input DataFrame.
+        timestamp_column: The name of the column containing Unix timestamps.
+        new_column_name: The name for the new datetime column.
+
+    Returns:
+        The DataFrame with the new datetime column added.
+    """
+
+    df[new_column_name] = pd.to_datetime(
+            df[timestamp_column], 
+            unit="s", 
+            utc=True, 
+            errors="raise"
+        )
+
+    return df
+
+
+def drop_tweets_before_date(
+    df: DataFrame,
+    timestamp_column: str = "timestamp",
+    cutoff_date: str = FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE,
+) -> DataFrame:
+   
+    cutoff_timestamp = datetime.datetime.strptime(cutoff_date, "%Y-%m-%d").timestamp()
+    mask = df[timestamp_column] <  cutoff_timestamp
+    
+    print(f"Dropping {len(mask)} {mask.sum()} tweets before {cutoff_date}.")
+    
+    df_filtered = df[mask].copy()
+  
+
+    return df_filtered
+ 

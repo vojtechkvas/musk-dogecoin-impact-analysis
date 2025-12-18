@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 from datetime import datetime
-from .app import app
+from ...app import app
 
 import src.data.processor as processor
 import src.data.loader as loader
@@ -15,6 +15,7 @@ from src.config.settings import (
     POSTS_TEXT,
     QUOTE_TEXT,
     FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE,
+    TWEET_COLOR
 )
 
 
@@ -24,6 +25,8 @@ STOCK_DATA = loader.load_data(
     settings.CSV_SEPARATOR_DOGEUSDT,
     settings.DOGE_DTYPES,
 )
+STOCK_DATA = processor.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
+
 TWEET_DATA = loader.load_data(
     settings.RAW_DIR, "all_musk_posts.csv", types=settings.POSTS_DTYPES, skiprows=1
 )
@@ -32,6 +35,7 @@ TWEET_DATA = processor.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
 
 TEXT = POSTS_TEXT
 
+print ("Data Loaded: STOCK_DATA and TWEET_DATA")
 
 @callback(
     Output("price-volume-graph", "figure"),
@@ -42,6 +46,7 @@ TEXT = POSTS_TEXT
     Input("date-from-picker", "date"),
     Input("date-to-picker", "date"),
     Input("text-filter-input", "value"),
+  #  prevent_initial_call=True
 )
 def update_dashboard(date_from, date_to, text_filter):
 
@@ -95,7 +100,7 @@ def update_dashboard(date_from, date_to, text_filter):
     fig.update_layout(template="plotly_dark")
     fig.add_trace(
         go.Scatter(
-            x=coin_stock_df["timestamp"],
+            x=coin_stock_df["created_at"],
             y=coin_stock_df["open"],
             name="Price (USD)",
             yaxis="y1",
@@ -111,6 +116,39 @@ def update_dashboard(date_from, date_to, text_filter):
         marker=dict(color='orange', opacity=0.6)
     ))
     """
+    
+    for tweet_time in coin_tweet_df['created_at']:
+            fig.add_vline(
+                x=tweet_time, 
+                line_width=1, 
+            #    line_dash="dash", 
+                line_color=TWEET_COLOR,  
+                layer="below" 
+            )
+
+
+    fig.add_trace(go.Scatter(
+        x=coin_tweet_df['created_at'],
+      
+        
+        y=[coin_stock_df['open'].mean()] * len(coin_tweet_df), 
+        mode='markers',
+        marker=dict(
+            size=15,
+            color="rgba(0,0,0,0)", 
+        ),
+        
+        text=coin_tweet_df[TEXT],
+        name="Tweet Details",
+        hoverinfo="text", 
+        showlegend=False
+    ))
+
+    fig.update_layout(
+        template="plotly_dark",
+        hovermode="x unified"
+    )
+
 
     tweets_text = "www"
 
@@ -121,8 +159,16 @@ def update_dashboard(date_from, date_to, text_filter):
     )
 
     kpi_sentiment = ""
-
-    return fig, tweets_text, kpi_tweets, kpi_price, kpi_sentiment
+    print("Dashboard updated successfully.")
+    
+    
+    
+    
+    
+    
+    
+    
+    return fig,  tweets_text, kpi_tweets, kpi_price, kpi_sentiment
 
 
 @app.callback(

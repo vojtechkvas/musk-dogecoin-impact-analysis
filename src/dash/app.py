@@ -9,9 +9,8 @@ external_stylesheets=[BOOTSTRAP, dbc.themes.CYBORG, dbc.icons.FONT_AWESOME]
 
 app = Dash(
     __name__,
-  #   use_pages=True,
-  #   use_pages=True,                 
-  #   pages_folder="pages",
+    use_pages=True,                 
+    pages_folder="pages",
     external_stylesheets=external_stylesheets,
     suppress_callback_exceptions=True,
 )
@@ -19,9 +18,8 @@ app = Dash(
 server = app.server
 
 
-from src.dash import layout 
-from src.dash import callbacks 
+from src.dash.pages.callbacks import callbacks 
 
 
-app.layout = layout.main_layout
-# app.layout = router.layout()
+# #  app.layout = layout.main_layout
+app.layout = router.layout()
