@@ -157,7 +157,7 @@ main_layout = dbc.Container(
                     width=12,
                 )
             ],
-            className="g-4",
+            className="g-4 mb-4",
         ),
         dbc.Row(
             [
@@ -165,7 +165,7 @@ main_layout = dbc.Container(
                     dbc.Card(
                         [
                             dbc.CardHeader(
-                                html.H4("Individual Tweet Impact (Relative Time)")
+                                html.H4("Individual Tweet Impact (Relative Time and Price)")
                             ),
                             dbc.CardBody(dcc.Graph(id="tweet-impact-graph", figure={})),
                         ]
@@ -173,7 +173,8 @@ main_layout = dbc.Container(
                     width=12,
                 )
             ],
-            className="g-4 mb-4",
+         #   className="g-4 mb-4",
+            className="g-4",
         ),
     ],
     fluid=True,

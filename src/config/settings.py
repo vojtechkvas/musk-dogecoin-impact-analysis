@@ -22,7 +22,7 @@ DOGE_DTYPES = {
     "number_of_trades": "Int32",
 }
 
-POSTS_TEXT = "full_text"
+POSTS_TEXT_COLUMN = "full_text"
 QUOTE_TEXT = ["orig_tweet_text", "musk_quote_tweet_text"]
 
 QUOTE_DTYPES = {
@@ -77,14 +77,20 @@ POSTS_DTYPES = {
     "retweet": "string",
 }
 
-DOGE_KEYWORDS = [  "@DOGE"]
-DOGE_KEYWORDS = [ "dogecoin" ]
+DOGE_KEYWORDS = ["@DOGE"]
+DOGE_KEYWORDS = ["dogecoin"]
 DOGE_KEYWORDS = ["doge", "dogecoin", "Ðoge", "Doge", "DOGE"]
-DEFAULT_DOGE_KEYWORDS="dogecoin"
+DOGE_KEYWORD = "dogecoin"
+DEFAULT_DOGE_KEYWORDS = " dogecoin "
 
 FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE = "2024-08-02"
 
+DOGE_MIN_DATE = "2025-07-05"
+DOGE_MIN_DATE = "2024-07-05"
 DOGE_MIN_DATE = "2019-07-05"
+
+RELATIVE_TIME_SPREAD_HOURS = 6 * 3600
+
 DOGE_MAX_DATE = "2025-10-24"
 
 
