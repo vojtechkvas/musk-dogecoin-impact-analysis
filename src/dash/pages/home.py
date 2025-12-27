@@ -1,7 +1,8 @@
-import dash
-from dash import html, dcc, callback, Output, Input, State
 import dash_bootstrap_components as dbc
-from src.config.settings import DEFAULT_DOGE_KEYWORDS, DOGE_MAX_DATE, DOGE_MIN_DATE
+
+import dash
+from dash import Input, Output, State, callback, dcc, html
+from src.config.config import DEFAULT_DOGE_KEYWORDS, DOGE_MAX_DATE, DOGE_MIN_DATE
 
 dash.register_page(__name__, path="/")
 
@@ -143,11 +144,11 @@ main_layout = dbc.Container(
                 dbc.Col(
                     dbc.Card(
                         [
-                            dbc.CardHeader(html.H4("Filtered Tweets (Text Display)")),
+                            #   dbc.CardHeader(html.H4("Filtered Tweets (Text Display)")),
                             dbc.CardBody(
                                 dcc.Textarea(
                                     id="filtered-tweets-output",
-                                    style={"width": "100%", "height": 300},
+                                    style={"width": "100%", "height": 10},
                                     readOnly=True,
                                     placeholder="Filtered tweets will appear here...",
                                 )
@@ -165,7 +166,9 @@ main_layout = dbc.Container(
                     dbc.Card(
                         [
                             dbc.CardHeader(
-                                html.H4("Individual Tweet Impact (Relative Time and Price)")
+                                html.H4(
+                                    "Individual Tweet Impact (Relative Time and Price)"
+                                )
                             ),
                             dbc.CardBody(dcc.Graph(id="tweet-impact-graph", figure={})),
                         ]
@@ -173,7 +176,7 @@ main_layout = dbc.Container(
                     width=12,
                 )
             ],
-         #   className="g-4 mb-4",
+            #   className="g-4 mb-4",
             className="g-4",
         ),
     ],

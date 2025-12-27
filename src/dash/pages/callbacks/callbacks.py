@@ -1,35 +1,38 @@
-from dash import callback, Output, Input, State
-import plotly.graph_objects as go
-import plotly.express as px
-import pandas as pd
 from datetime import datetime
-from ...app import app
 
-import src.data.processor as processor
-import src.data.loader as loader
-import src.config.settings as settings
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
-from src.config.settings import (
-    DOGE_MIN_DATE,
+import src.config.config as config
+import src.data_utils.loaders as loaders
+import src.data_utils.processing as processor
+from dash import Input, Output, State, callback
+from src.config.config import (
     DOGE_KEYWORDS,
+    DOGE_MIN_DATE,
+    FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE,
     POSTS_TEXT_COLUMN,
     QUOTE_TEXT,
-    FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE,
+    RELATIVE_TIME_SPREAD_HOURS,
     TWEET_COLOR,
-    RELATIVE_TIME_SPREAD_HOURS
 )
 
+from ...app import app
 
-STOCK_DATA = loader.load_data(
-    settings.RAW_DIR,
-    "DOGEUSDT.csv",
-    settings.CSV_SEPARATOR_DOGEUSDT,
-    settings.DOGE_DTYPES,
+STOCK_DATA = loaders.load_data(
+    config.RAW_DIR,
+    config.RAW_DOGE_PRICE_PATH,
+    config.CSV_SEPARATOR_DOGEUSDT,
+    config.DOGE_DTYPES,
 )
 STOCK_DATA = processor.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
 
-TWEET_DATA = loader.load_data(
-    settings.RAW_DIR, "all_musk_posts.csv", types=settings.POSTS_DTYPES, skiprows=1
+TWEET_DATA = loaders.load_data(
+    config.PROCESSED_DIR,
+    config.PROCESSED_TWEETS_DOGECOIN,
+    types=config.POSTS_DTYPES,
+    skiprows=1,
 )
 
 TWEET_DATA = processor.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
@@ -123,11 +126,10 @@ def update_dashboard(date_from, date_to, text_filter):
         marker=dict(color='orange', opacity=0.6)
     ))
     """
-    
-    
+
     colors = px.colors.qualitative.Plotly
 
-  #   for tweet_time in coin_tweet_df["created_at"]:
+    #   for tweet_time in coin_tweet_df["created_at"]:
     for i, tweet_time in enumerate(coin_tweet_df["created_at"]):
         fig.add_vline(
             x=tweet_time,
@@ -148,8 +150,8 @@ def update_dashboard(date_from, date_to, text_filter):
             ),
             text=coin_tweet_df[POSTS_TEXT_COLUMN],
             name="Tweet Details",
-            hoverinfo="text",
-            showlegend=False,
+            hovertemplate="<b>Tweet Content:</b><br>%{text}<extra></extra>",
+            showlegend=True,
         )
     )
 
@@ -163,22 +165,19 @@ def update_dashboard(date_from, date_to, text_filter):
         f"${coin_stock_df['open'].mean():,.4f}" if not coin_stock_df.empty else "$ N/A"
     )
 
-    kpi_sentiment = ""
+    impact_fig, max_vals = create_tweet_impact_figure(
+        coin_tweet_df, coin_stock_df, colors
+    )
+    print(max_vals)
+
+    kpi_sentiment = "ffff"
     print("Dashboard updated successfully.")
-
-
-
-    impact_fig = create_tweet_impact_figure(coin_tweet_df, coin_stock_df, colors)
-
-
-
-
     return fig, impact_fig, tweets_text, kpi_tweets, kpi_price, kpi_sentiment
 
 
-
-def create_tweet_impact_figure(coin_tweet_df, stock_data_full, colors, timespread_hours=RELATIVE_TIME_SPREAD_HOURS):
-
+def create_tweet_impact_figure(
+    coin_tweet_df, stock_data_full, colors, timespread_hours=RELATIVE_TIME_SPREAD_HOURS
+):
 
     impact_fig = go.Figure()
     impact_fig.update_layout(
@@ -186,35 +185,32 @@ def create_tweet_impact_figure(coin_tweet_df, stock_data_full, colors, timesprea
         template="plotly_dark",
         xaxis_title="Hours relative to Tweet",
         yaxis_title="Price (USD)",
-        hovermode="closest"
+        hovermode="closest",
     )
 
-    
-    
     print("Creating tweet impact figure...")
     print("Creating tweet impact figure...")
     print("Creating tweet impact figure...")
     print("Creating tweet impact figure...")
     print("Creating tweet impact figure...")
-    
+
     print()
-    
+
     coin_tweet_df.info()
-    
-        
+    max_vals = []
     for i, (kk, tweet) in enumerate(coin_tweet_df.iterrows()):
-     
+
         color = colors[i % len(colors)]
-     
-      #  print(kk)
-      #  print(tweet)
+
+        #  print(kk)
+        #  print(tweet)
         t_time = tweet["created_at"].floor("min").timestamp()
         print(f"Processing tweet at time: {tweet['timestamp'] }")
         print(f"Processing tweet at time: {t_time}")
         print(f"created_at tweet at time: { (tweet['created_at'] )}")
         print(f"created_at tweet at time: { (tweet['created_at'] ) }")
         print(f"created_at tweet at time: {type(tweet['created_at'] )}")
- 
+
         window_df = stock_data_full[
             (stock_data_full["timestamp"] >= t_time - timespread_hours)
             & (stock_data_full["timestamp"] <= t_time + timespread_hours)
@@ -231,17 +227,20 @@ def create_tweet_impact_figure(coin_tweet_df, stock_data_full, colors, timesprea
 
             price_at_tweet = tweet_price_row["open"].values[0]
 
-            # Create a relative time column (0 = the moment of the tweet)
-
             window_df["normalized_price"] = window_df["open"] / price_at_tweet
             window_df["relative_hours"] = (window_df["timestamp"] - t_time) / 3600
-            
+
             max_val = window_df["normalized_price"].max()
-            peak_time = window_df.loc[window_df["normalized_price"].idxmax(), "relative_hours"]
-            peak_time_x = window_df.loc[window_df["normalized_price"].idxmax(), "relative_hours"]
-            
+            peak_time = window_df.loc[
+                window_df["normalized_price"].idxmax(), "relative_hours"
+            ]
+
             positive_hours_df = window_df[window_df["relative_hours"] > 0]
-            peak_time_x = positive_hours_df.loc[positive_hours_df["normalized_price"].idxmax(), "relative_hours"]
+            max_val = positive_hours_df["normalized_price"].max()
+            peak_time_x = positive_hours_df.loc[
+                positive_hours_df["normalized_price"].idxmax(), "relative_hours"
+            ]
+            max_vals.append((max_val, peak_time_x))
             print(window_df["relative_hours"].min(), window_df["relative_hours"].max())
             impact_fig.add_trace(
                 go.Scatter(
@@ -270,16 +269,14 @@ def create_tweet_impact_figure(coin_tweet_df, stock_data_full, colors, timesprea
                 line_dash="dot",
                 line_width=1,
                 line_color=color,
-                opacity=0.5
+                opacity=0.5,
             )
-            
+
     # Add a central vertical line representing the exact tweet moment
-   #   impact_fig.add_vline(x=0, line_width=2, line_dash="dash", line_color="white")
-   #   impact_fig.add_hline(y=1.0, line_width=1, line_color="pink", line_dash="dash")
-    
-    return impact_fig
+    #   impact_fig.add_vline(x=0, line_width=2, line_dash="dash", line_color="white")
+    #   impact_fig.add_hline(y=1.0, line_width=1, line_color="pink", line_dash="dash")
 
-
+    return impact_fig, max_vals
 
 
 @app.callback(
