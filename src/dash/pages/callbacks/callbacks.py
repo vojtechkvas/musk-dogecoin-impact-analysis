@@ -21,16 +21,16 @@ from src.config.config import (
 from ...app import app
 
 STOCK_DATA = loaders.load_data(
-    config.RAW_DIR,
-    config.RAW_DOGE_PRICE_PATH,
-    config.CSV_SEPARATOR_DOGEUSDT,
-    config.DOGE_DTYPES,
+    config.PROCESSED_DIR,
+    config.PROCESSED_DOGE_PRICE_PATH,
+    types=config.DOGE_DTYPES,
+    skiprows=1,
 )
 STOCK_DATA = processor.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
 
 TWEET_DATA = loaders.load_data(
     config.PROCESSED_DIR,
-    config.PROCESSED_TWEETS_DOGECOIN,
+    config.PROCESSED_TWEETS_DOGECOIN_PATH,
     types=config.POSTS_DTYPES,
     skiprows=1,
 )
@@ -138,6 +138,50 @@ def update_dashboard(date_from, date_to, text_filter):
             line_color=colors[i % len(colors)],
             layer="below",
         )
+    print("coin_tweet_df.columns")
+    print(coin_tweet_df.columns)
+
+    hover_columns = coin_tweet_df.columns
+    hover_columns = [
+        "full_text",
+        "date_display",
+        "retweet_count",
+        "reply_count",
+        "like_count",
+        "quote_count",
+        "view_count",
+        "bookmark_count",
+        "id",
+        "url",
+        "twitter_url",
+        "created_at",
+        "is_reply",
+        "in_reply_to_id",
+        "conversation_id",
+        "in_reply_to_user_id",
+        "in_reply_to_username",
+        "is_pinned",
+        "is_retweet",
+        "is_quote",
+        "is_conversation_controlled",
+        "possibly_sensitive",
+        "quote_id",
+        "quote",
+        "retweet",
+        "timestamp",
+    ]
+
+    coin_tweet_df["timestamp"] = pd.to_datetime(coin_tweet_df["timestamp"], unit="s")
+
+    # 2. SECOND: Create the readable string column
+    coin_tweet_df["date_display"] = coin_tweet_df["timestamp"].dt.strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+
+    template_lines = [
+        f"<b>{col}:</b> %{{customdata[{i}]}}" for i, col in enumerate(hover_columns)
+    ]
+    full_hovertemplate = "<br>".join(template_lines) + "<extra></extra>"
 
     fig.add_trace(
         go.Scatter(
@@ -149,8 +193,9 @@ def update_dashboard(date_from, date_to, text_filter):
                 color="rgba(0,0,0,0)",
             ),
             text=coin_tweet_df[POSTS_TEXT_COLUMN],
+            customdata=coin_tweet_df[hover_columns],
+            hovertemplate=full_hovertemplate,
             name="Tweet Details",
-            hovertemplate="<b>Tweet Content:</b><br>%{text}<extra></extra>",
             showlegend=True,
         )
     )
@@ -166,7 +211,7 @@ def update_dashboard(date_from, date_to, text_filter):
     )
 
     impact_fig, max_vals = create_tweet_impact_figure(
-        coin_tweet_df, coin_stock_df, colors
+        coin_tweet_df, coin_stock_df, full_hovertemplate, colors
     )
     print(max_vals)
 
@@ -176,7 +221,11 @@ def update_dashboard(date_from, date_to, text_filter):
 
 
 def create_tweet_impact_figure(
-    coin_tweet_df, stock_data_full, colors, timespread_hours=RELATIVE_TIME_SPREAD_HOURS
+    coin_tweet_df,
+    stock_data_full,
+    full_hovertemplate,
+    colors,
+    timespread_hours=RELATIVE_TIME_SPREAD_HOURS,
 ):
 
     impact_fig = go.Figure()
@@ -186,6 +235,14 @@ def create_tweet_impact_figure(
         xaxis_title="Hours relative to Tweet",
         yaxis_title="Price (USD)",
         hovermode="closest",
+        height=1000,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.2,
+            xanchor="center",
+            x=0.5,
+        ),
     )
 
     print("Creating tweet impact figure...")
@@ -242,12 +299,17 @@ def create_tweet_impact_figure(
             ]
             max_vals.append((max_val, peak_time_x))
             print(window_df["relative_hours"].min(), window_df["relative_hours"].max())
+            print("tweet[full_text]")
+            print("t_time")
+            print(tweet["full_text"])
+            print(t_time)
             impact_fig.add_trace(
                 go.Scatter(
                     x=window_df["relative_hours"],
                     y=window_df["normalized_price"],
                     mode="lines",
-                    name=f"Tweet at {datetime.fromtimestamp(t_time).strftime('%H:%M')}",
+                    #     name=f"Tweet at {datetime.fromtimestamp(t_time).strftime('%H:%M')}",
+                    name=tweet["full_text"],
                     line=dict(color=color, width=2),
                     opacity=0.6,
                     hovertemplate="Hour: %{x}<br>Price: %{y}<extra></extra>",
