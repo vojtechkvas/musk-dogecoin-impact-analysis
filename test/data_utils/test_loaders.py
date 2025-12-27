@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import pytest
 
-from src.data.loaders import load_data, save_data
+from src.data_utils.loaders import load_data, save_data
 
 
 class TestLoadData:
@@ -66,6 +66,30 @@ class TestLoadData:
         """Negative test: Verifies FileNotFoundError is raised."""
         with pytest.raises(FileNotFoundError):
             load_data(wrong_dir, wrong_file)
+
+    @pytest.mark.parametrize(
+        "mock_csv", [("default.csv", "a,b\n1,2\n3,4")], indirect=True
+    )
+    def test_load_data_defaults(self, mock_csv):
+        """Tests loading with default parameters (None values)."""
+        directory, filename = mock_csv
+        df = load_data(directory, filename)
+
+        assert len(df) == 2
+        assert "a" in df.columns
+
+    @pytest.mark.parametrize(
+        "mock_csv",
+        [("skip.csv", "garbage_line\nimportant_line\ncol1,col2\nval1,10")],
+        indirect=True,
+    )
+    def test_load_data_skiprows(self, mock_csv):
+        """Tests that skiprows correctly bypasses header noise."""
+        directory, filename = mock_csv
+        df = load_data(directory, filename, separator=",", skiprows=2)
+
+        assert list(df.columns) == ["col1", "col2"]
+        assert len(df) == 1
 
 
 class TestSaveData:
