@@ -1,10 +1,20 @@
+"""
+Configuration constants for the Elon Musk & Dogecoin Impact Analysis project.
+Defines file paths, data schemas, filtering keywords, and visualization settings.
+"""
+
 RAW_TWEETS_POSTS = "all_musk_posts.csv"
 RAW_TWEETS_QUOTE = "musk_quote_tweets.csv"
-RAW_DOGE_PRICE_PATH = "doge_price.csv"
+RAW_DOGE_PRICE_PATH = "DOGEUSDT.csv"
+
+PROCESSED_TWEETS_DOGECOIN = "musk_posts_dogecoin.csv"
+PROCESSED_DOGE_PRICE_PATH = "dogecoin_to_usdt.csv"
+
 PROCESSED_TWEETS = "combined_data.csv"
-RAW_DIR = "datasets/raw"
+
 RAW_DIR = ["datasets", "raw"]
-PROCESSED_DIR = "datasets/processed"
+PROCESSED_DIR = ["datasets", "processed"]
+
 
 CSV_SEPARATOR = ","
 CSV_SEPARATOR_DOGEUSDT = "|"
@@ -61,7 +71,7 @@ POSTS_DTYPES = {
     "quote_count": "Int64",
     "view_count": "Int64",
     "created_at": "object",
-    "bookmark_count": "float64",
+    "bookmark_count": "Int64",
     "is_reply": "boolean",
     "in_reply_to_id": "float64",
     "conversation_id": "float64",
@@ -79,8 +89,11 @@ POSTS_DTYPES = {
 
 DOGE_KEYWORDS = ["@DOGE"]
 DOGE_KEYWORDS = ["dogecoin"]
-DOGE_KEYWORDS = ["doge", "dogecoin", "Ðoge", "Doge", "DOGE"]
-DOGE_KEYWORD = "dogecoin"
+DOGE_KEYWORDS = ["doge"]
+DOGE_KEYWORDS = ["dogecoin"]
+DOGE_KEYWORDS = ["doge", "dogecoin", "Ðoge", "Doge", "DOGE", "crypto"]
+DOGE_KEYWORDS = ["dogecoin", "Ðoge", "crypto"]
+DOGE_KEYWORD = "doge"
 DEFAULT_DOGE_KEYWORDS = " dogecoin "
 
 FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE = "2024-08-02"
