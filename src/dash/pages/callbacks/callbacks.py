@@ -107,7 +107,17 @@ def update_dashboard(date_from, date_to, text_filter):
         print(f"END Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
 
     fig = go.Figure()
-    fig.update_layout(template="plotly_dark")
+    fig.update_layout(
+        template="plotly_dark",
+        height=600,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.2,
+            xanchor="center",
+            x=0.5,
+        ),
+    )
     fig.add_trace(
         go.Scatter(
             x=coin_stock_df["created_at"],
@@ -117,29 +127,31 @@ def update_dashboard(date_from, date_to, text_filter):
             line=dict(color="blue"),
         )
     )
-    """
-    fig.add_trace(go.Bar(
-        x=coin_tweet_df['timestamp'],
-        y=coin_stock_df['open'],
-        name='Tweet Volume',
-        yaxis='y2',
-        marker=dict(color='orange', opacity=0.6)
-    ))
-    """
 
     colors = px.colors.qualitative.Plotly
 
-    #   for tweet_time in coin_tweet_df["created_at"]:
-    for i, tweet_time in enumerate(coin_tweet_df["created_at"]):
-        fig.add_vline(
-            x=tweet_time,
-            line_width=1,
-            #    line_dash="dash",
-            line_color=colors[i % len(colors)],
-            layer="below",
+    y_min = coin_stock_df["open"].min() if not coin_stock_df.empty else 0
+    y_max = coin_stock_df["open"].max() if not coin_stock_df.empty else 1
+
+    for i, (idx, row) in enumerate(coin_tweet_df.iterrows()):
+        tweet_text = str(row[POSTS_TEXT_COLUMN])
+        tweet_time = row["created_at"]
+
+        short_text = (tweet_text[:30] + "..") if len(tweet_text) > 30 else tweet_text
+        short_text = tweet_text
+
+        fig.add_trace(
+            go.Scatter(
+                x=[tweet_time, tweet_time],
+                y=[y_min, y_max],
+                mode="lines",
+                name=short_text,
+                line=dict(color=colors[i % len(colors)], width=1),
+                legendgroup="tweets",
+                showlegend=True,
+                hoverinfo="skip",
+            )
         )
-    print("coin_tweet_df.columns")
-    print(coin_tweet_df.columns)
 
     hover_columns = coin_tweet_df.columns
     hover_columns = [
@@ -173,7 +185,6 @@ def update_dashboard(date_from, date_to, text_filter):
 
     coin_tweet_df["timestamp"] = pd.to_datetime(coin_tweet_df["timestamp"], unit="s")
 
-    # 2. SECOND: Create the readable string column
     coin_tweet_df["date_display"] = coin_tweet_df["timestamp"].dt.strftime(
         "%Y-%m-%d %H:%M:%S"
     )
@@ -195,12 +206,15 @@ def update_dashboard(date_from, date_to, text_filter):
             text=coin_tweet_df[POSTS_TEXT_COLUMN],
             customdata=coin_tweet_df[hover_columns],
             hovertemplate=full_hovertemplate,
-            name="Tweet Details",
+            name="",
             showlegend=True,
         )
     )
 
-    fig.update_layout(template="plotly_dark", hovermode="x unified")
+    fig.update_layout(
+        template="plotly_dark",
+        hovermode="x unified",
+    )
 
     tweets_text = "www"
 
@@ -211,7 +225,7 @@ def update_dashboard(date_from, date_to, text_filter):
     )
 
     impact_fig, max_vals = create_tweet_impact_figure(
-        coin_tweet_df, coin_stock_df, full_hovertemplate, colors
+        coin_tweet_df, coin_stock_df, full_hovertemplate, hover_columns, colors
     )
     print(max_vals)
 
@@ -224,6 +238,7 @@ def create_tweet_impact_figure(
     coin_tweet_df,
     stock_data_full,
     full_hovertemplate,
+    hover_columns,
     colors,
     timespread_hours=RELATIVE_TIME_SPREAD_HOURS,
 ):
@@ -303,6 +318,9 @@ def create_tweet_impact_figure(
             print("t_time")
             print(tweet["full_text"])
             print(t_time)
+
+            single_tweet_data = [tweet[hover_columns].values] * len(window_df)
+
             impact_fig.add_trace(
                 go.Scatter(
                     x=window_df["relative_hours"],
@@ -312,7 +330,13 @@ def create_tweet_impact_figure(
                     name=tweet["full_text"],
                     line=dict(color=color, width=2),
                     opacity=0.6,
-                    hovertemplate="Hour: %{x}<br>Price: %{y}<extra></extra>",
+                    text=coin_tweet_df[POSTS_TEXT_COLUMN],
+                    #    customdata=coin_tweet_df[hover_columns],
+                    #    colors[i % len(colors)],
+                    customdata=single_tweet_data,
+                    hovertemplate=full_hovertemplate,
+                    #   name="Tweet Details",
+                    showlegend=True,
                 )
             )
             """
