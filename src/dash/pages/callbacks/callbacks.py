@@ -6,16 +6,13 @@ import plotly.graph_objects as go
 
 import src.config.config as config
 import src.data_utils.loaders as loaders
-import src.data_utils.processing as processor
+import src.data_utils.processing as processing
 from dash import Input, Output, State, callback
 from src.config.config import (
-    DOGE_KEYWORDS,
-    DOGE_MIN_DATE,
     FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE,
+    HOVER_COLUMNS,
     POSTS_TEXT_COLUMN,
-    QUOTE_TEXT,
     RELATIVE_TIME_SPREAD_HOURS,
-    TWEET_COLOR,
 )
 
 from ...app import app
@@ -26,7 +23,8 @@ STOCK_DATA = loaders.load_data(
     types=config.DOGE_DTYPES,
     skiprows=1,
 )
-STOCK_DATA = processor.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
+print(STOCK_DATA.head())
+STOCK_DATA = processing.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
 
 TWEET_DATA = loaders.load_data(
     config.PROCESSED_DIR,
@@ -35,7 +33,7 @@ TWEET_DATA = loaders.load_data(
     skiprows=1,
 )
 
-TWEET_DATA = processor.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
+TWEET_DATA = processing.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
 
 
 print("Data Loaded: STOCK_DATA and TWEET_DATA")
@@ -51,17 +49,13 @@ print("Data Loaded: STOCK_DATA and TWEET_DATA")
     Input("date-from-picker", "date"),
     Input("date-to-picker", "date"),
     Input("text-filter-input", "value"),
-    #  prevent_initial_call=True
+    #  prevent_initial_call=True,
 )
 def update_dashboard(date_from, date_to, text_filter):
 
-    selected_coin = "selected_coin"
     print(
-        f"Filters Applied - Coin: {selected_coin}, Date From: {date_from}, Date To: {date_to}, Text Filter: {text_filter}"
+        f"Filters Applied - Date From: {date_from}, Date To: {date_to}, Text Filter: {text_filter}"
     )
-
-    date_format = "%d %m %Y %H:%M:%S"
-    date_format = "%Y-%m-%d"
 
     print(f"Raw Date Inputs - From: {date_from}, To: {date_to}")
 
@@ -76,14 +70,8 @@ def update_dashboard(date_from, date_to, text_filter):
             "$ N/A",
             "N/A",
         )
-
-    datetime_object = datetime.strptime(date_from, date_format)
-    date_from_timestamp = datetime_object.timestamp()
-
-    print(f"Timestamp Range - From: ")
-
-    datetime_object = datetime.strptime(date_to, date_format)
-    date_to_timestamp = datetime_object.timestamp()
+    date_from_timestamp = processing.convert_date_to_timestamp(date_from)
+    date_to_timestamp = processing.convert_date_to_timestamp(date_to)
 
     coin_stock_df = STOCK_DATA
     coin_tweet_df = TWEET_DATA
@@ -97,14 +85,9 @@ def update_dashboard(date_from, date_to, text_filter):
         & (coin_tweet_df["timestamp"] <= date_to_timestamp)
     ]
 
-    if text_filter:
-        print(f"Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
-        coin_tweet_df = coin_tweet_df[
-            coin_tweet_df[POSTS_TEXT_COLUMN].str.contains(
-                text_filter, case=False, na=False
-            )
-        ]
-        print(f"END Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
+    print(f"Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
+    coin_tweet_df = processing.filter_tweets(coin_tweet_df, text_filter)
+    print(f"END Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
 
     fig = go.Figure()
     fig.update_layout(
@@ -130,8 +113,8 @@ def update_dashboard(date_from, date_to, text_filter):
 
     colors = px.colors.qualitative.Plotly
 
-    y_min = coin_stock_df["open"].min() if not coin_stock_df.empty else 0
-    y_max = coin_stock_df["open"].max() if not coin_stock_df.empty else 1
+    y_min = coin_stock_df["open"].min()
+    y_max = coin_stock_df["open"].max()
 
     for i, (idx, row) in enumerate(coin_tweet_df.iterrows()):
         tweet_text = str(row[POSTS_TEXT_COLUMN])
@@ -147,41 +130,11 @@ def update_dashboard(date_from, date_to, text_filter):
                 mode="lines",
                 name=short_text,
                 line=dict(color=colors[i % len(colors)], width=1),
-                legendgroup="tweets",
+                #   legendgroup="tweets",
                 showlegend=True,
                 hoverinfo="skip",
             )
         )
-
-    hover_columns = coin_tweet_df.columns
-    hover_columns = [
-        "full_text",
-        "date_display",
-        "retweet_count",
-        "reply_count",
-        "like_count",
-        "quote_count",
-        "view_count",
-        "bookmark_count",
-        "id",
-        "url",
-        "twitter_url",
-        "created_at",
-        "is_reply",
-        "in_reply_to_id",
-        "conversation_id",
-        "in_reply_to_user_id",
-        "in_reply_to_username",
-        "is_pinned",
-        "is_retweet",
-        "is_quote",
-        "is_conversation_controlled",
-        "possibly_sensitive",
-        "quote_id",
-        "quote",
-        "retweet",
-        "timestamp",
-    ]
 
     coin_tweet_df["timestamp"] = pd.to_datetime(coin_tweet_df["timestamp"], unit="s")
 
@@ -190,7 +143,7 @@ def update_dashboard(date_from, date_to, text_filter):
     )
 
     template_lines = [
-        f"<b>{col}:</b> %{{customdata[{i}]}}" for i, col in enumerate(hover_columns)
+        f"<b>{col}:</b> %{{customdata[{i}]}}" for i, col in enumerate(HOVER_COLUMNS)
     ]
     full_hovertemplate = "<br>".join(template_lines) + "<extra></extra>"
 
@@ -204,7 +157,7 @@ def update_dashboard(date_from, date_to, text_filter):
                 color="rgba(0,0,0,0)",
             ),
             text=coin_tweet_df[POSTS_TEXT_COLUMN],
-            customdata=coin_tweet_df[hover_columns],
+            customdata=coin_tweet_df[HOVER_COLUMNS],
             hovertemplate=full_hovertemplate,
             name="",
             showlegend=True,
@@ -225,7 +178,7 @@ def update_dashboard(date_from, date_to, text_filter):
     )
 
     impact_fig, max_vals = create_tweet_impact_figure(
-        coin_tweet_df, coin_stock_df, full_hovertemplate, hover_columns, colors
+        coin_tweet_df, coin_stock_df, full_hovertemplate, HOVER_COLUMNS, colors
     )
     print(max_vals)
 
@@ -331,7 +284,7 @@ def create_tweet_impact_figure(
                     line=dict(color=color, width=2),
                     opacity=0.6,
                     text=coin_tweet_df[POSTS_TEXT_COLUMN],
-                    #    customdata=coin_tweet_df[hover_columns],
+                    #    customdata=coin_tweet_df[HOVER_COLUMNS],
                     #    colors[i % len(colors)],
                     customdata=single_tweet_data,
                     hovertemplate=full_hovertemplate,
@@ -373,6 +326,7 @@ def create_tweet_impact_figure(
     [
         State("date-to-picker", "date"),
     ],
+    prevent_initial_call=True,
 )
 def update_date_picker(n_clicks, current_date):
     """

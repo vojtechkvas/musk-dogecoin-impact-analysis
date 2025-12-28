@@ -131,7 +131,12 @@ main_layout = dbc.Container(
                     dbc.Card(
                         [
                             dbc.CardHeader(html.H4("Price and Tweet Volume Over Time")),
-                            dbc.CardBody(dcc.Graph(id="price-volume-graph", figure={})),
+                            dbc.CardBody(
+                                dcc.Graph(
+                                    id="price-volume-graph",
+                                    figure={"data": [], "layout": {}},
+                                )
+                            ),
                         ]
                     ),
                     width=12,
@@ -170,7 +175,12 @@ main_layout = dbc.Container(
                                     "Individual Tweet Impact (Relative Time and Price)"
                                 )
                             ),
-                            dbc.CardBody(dcc.Graph(id="tweet-impact-graph", figure={})),
+                            dbc.CardBody(
+                                dcc.Graph(
+                                    id="tweet-impact-graph",
+                                    figure={"data": [], "layout": {}},
+                                )
+                            ),
                         ]
                     ),
                     width=12,

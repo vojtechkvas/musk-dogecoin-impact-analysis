@@ -6,7 +6,7 @@ keywords, convert between Unix timestamps and datetime objects, and prune
 data based on specific chronological cutoffs.
 """
 
-import datetime
+from datetime import datetime
 from typing import List, Tuple
 
 import pandas as pd
@@ -19,21 +19,61 @@ from src.config.config import (
     QUOTE_TEXT,
 )
 
-"""
-def filter_tweets(df, doge_keyword=DOGE_KEYWORD, text_column=POSTS_TEXT_COLUMN):
 
-    mask = df[text_column].str.contains(doge_keyword, case=False, na=False)
+def convert_date_to_timestamp(date_string: str, date_format: str = "%Y-%m-%d") -> int:
+    """
+    Converts a date string in YYYY-MM-DD format to a Unix timestamp.
+
+    Args:
+        date_string (str): The date string to convert.
+        date_format (str): The expected format of the date string.
+                           Defaults to "%Y-%m-%d".
+    Returns:
+        int: The corresponding Unix timestamp.
+    """
+
+    try:
+        datetime_object = datetime.strptime(date_string, date_format)
+
+        return int(datetime_object.timestamp())
+    except ValueError as e:
+        raise ValueError(
+            f"Invalid date format: {date_string}. Expected {date_format}"
+        ) from e
+
+
+def filter_tweets(
+    df: pd.DataFrame, keyword: str, text_column: str = POSTS_TEXT_COLUMN
+) -> DataFrame:
+    """
+    Filters a DataFrame for rows where the text column contains a specific keyword.
+
+    The search is case-insensitive and handles missing (NaN) values by excluding them.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing tweet or post data.
+        keyword (str): The string to search for. If empty, the original
+            DataFrame is returned.
+        text_column (str): The name of the column to search within.
+            Defaults to POSTS_TEXT_COLUMN.
+
+    Returns:
+        pd.DataFrame: A filtered copy of the DataFrame containing only rows
+            where the keyword was found.
+    """
+    if not keyword:
+        return df
+
+    mask = df[text_column].str.contains(keyword, case=False, na=False)
 
     return df[mask].copy()
-
-"""
 
 
 def get_posts_related_to_dogecoin(
     df: pd.DataFrame,
     doge_keywords: List[str] = None,
     text_column: str = None,
-):
+) -> DataFrame:
     """
     Filters a DataFrame for rows where the text column contains specific Dogecoin keywords.
 
@@ -61,7 +101,7 @@ def get_repost_related_to_dogecoin_quote(
     df: pd.DataFrame,
     doge_keywords: List[str] = None,
     text_columns: List[str] = None,
-):
+) -> DataFrame:
     """
     Filters a DataFrame for reposts or quotes that mention Dogecoin in either
     the original post or the quoted content.

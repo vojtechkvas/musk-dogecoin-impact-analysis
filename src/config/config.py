@@ -7,7 +7,7 @@ RAW_TWEETS_POSTS = "all_musk_posts.csv"
 RAW_TWEETS_QUOTE = "musk_quote_tweets.csv"
 RAW_DOGE_PRICE_PATH = "DOGEUSDT.csv"
 
-PROCESSED_TWEETS_DOGECOIN = "musk_posts_dogecoin.csv"
+PROCESSED_TWEETS_DOGECOIN_PATH = "musk_posts_dogecoin.csv"
 PROCESSED_DOGE_PRICE_PATH = "dogecoin_to_usdt.csv"
 
 PROCESSED_TWEETS = "combined_data.csv"
@@ -114,3 +114,33 @@ PRIMARY_COLOR = "#FFA400"
 
 DOGECOIND_COLOR = "blue"
 TWEET_COLOR = "RED"
+
+
+HOVER_COLUMNS = [
+    "full_text",
+    "date_display",
+    "retweet_count",
+    "reply_count",
+    "like_count",
+    "quote_count",
+    "view_count",
+    "bookmark_count",
+    "id",
+    "url",
+    "twitter_url",
+    "created_at",
+    "is_reply",
+    "in_reply_to_id",
+    "conversation_id",
+    "in_reply_to_user_id",
+    "in_reply_to_username",
+    "is_pinned",
+    "is_retweet",
+    "is_quote",
+    "is_conversation_controlled",
+    "possibly_sensitive",
+    "quote_id",
+    "quote",
+    "retweet",
+    "timestamp",
+]

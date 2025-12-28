@@ -1,7 +1,12 @@
-from dash import Dash
-from dash_bootstrap_components.themes import BOOTSTRAP
+"""
+Dash application initialization module.
+This module configures the Dash app instance, themes, and multi-page routing.
+"""
 
 import dash_bootstrap_components as dbc
+from dash_bootstrap_components.themes import BOOTSTRAP
+
+from dash import Dash
 from src.dash import router
 
 external_stylesheets = [BOOTSTRAP]
@@ -18,8 +23,6 @@ app = Dash(
 server = app.server
 
 
-from src.dash.pages.callbacks import callbacks
-
-
-# #  app.layout = layout.main_layout
 app.layout = router.layout()
+
+from src.dash.pages.callbacks import callbacks
