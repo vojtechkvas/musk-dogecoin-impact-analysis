@@ -178,7 +178,6 @@ def update_dashboard(date_from, date_to, text_filter):
     impact_fig, max_vals = create_tweet_impact_figure(
         coin_tweet_df, coin_stock_df, full_hovertemplate, HOVER_COLUMNS, colors
     )
-    print(max_vals)
 
     avg_price_during_tweet = processing.calculate_avg_price_at_tweet_time(
         coin_tweet_df, coin_stock_df
@@ -201,33 +200,22 @@ def create_tweet_impact_figure(
     colors,
     timespread_hours=RELATIVE_TIME_SPREAD_HOURS,
 ):
-
     impact_fig = go.Figure()
     impact_fig.update_layout(
         title="Price Impact: 6 hours Before vs 6 hours after Tweets",
         template="plotly_dark",
         xaxis_title="Hours relative to Tweet",
-        yaxis_title="Price (USD)",
+        yaxis_title="Normalized Price (Relative to Tweet)",
         hovermode="closest",
-        height=1000,
-        legend=dict(
-            orientation="h",
-            yanchor="top",
-            y=-0.2,
-            xanchor="center",
-            x=0.5,
-        ),
+        height=900,
+        legend=dict(orientation="v", yanchor="top", y=-0.2, xanchor="center", x=0.5),
     )
 
-    print("Creating tweet impact figure...")
-    print("Creating tweet impact figure...")
-
-    coin_tweet_df.info()
     max_vals = []
+    all_normalized_series = []
+
     for i, (kk, tweet) in enumerate(coin_tweet_df.iterrows()):
-
         color = colors[i % len(colors)]
-
         t_time = tweet["created_at"].floor("min").timestamp()
 
         window_df = stock_data_full[
@@ -236,58 +224,88 @@ def create_tweet_impact_figure(
         ].copy()
 
         if not window_df.empty:
-
             tweet_price_row = window_df[window_df["timestamp"] == t_time]
-
             if tweet_price_row.empty:
                 tweet_price_row = window_df.iloc[
                     (window_df["timestamp"] - t_time).abs().argsort()[:1]
                 ]
 
             price_at_tweet = tweet_price_row["open"].values[0]
-
             window_df["normalized_price"] = window_df["open"] / price_at_tweet
             window_df["relative_hours"] = (window_df["timestamp"] - t_time) / 3600
 
-            max_val = window_df["normalized_price"].max()
-            peak_time = window_df.loc[
-                window_df["normalized_price"].idxmax(), "relative_hours"
-            ]
+            all_normalized_series.append(
+                window_df[["relative_hours", "normalized_price"]]
+            )
 
             positive_hours_df = window_df[window_df["relative_hours"] > 0]
-            max_val = positive_hours_df["normalized_price"].max()
-            peak_time_x = positive_hours_df.loc[
-                positive_hours_df["normalized_price"].idxmax(), "relative_hours"
-            ]
-            max_vals.append((max_val, peak_time_x))
+            if not positive_hours_df.empty:
+                max_val = positive_hours_df["normalized_price"].max()
+                peak_time_x = positive_hours_df.loc[
+                    positive_hours_df["normalized_price"].idxmax(), "relative_hours"
+                ]
+                max_vals.append((max_val, peak_time_x))
+
+                impact_fig.add_vline(
+                    x=peak_time_x,
+                    line_dash="dot",
+                    line_width=1,
+                    line_color=color,
+                    opacity=0.3,
+                )
 
             single_tweet_data = [tweet[hover_columns].values] * len(window_df)
-
             impact_fig.add_trace(
                 go.Scatter(
                     x=window_df["relative_hours"],
                     y=window_df["normalized_price"],
                     mode="lines",
-                    #     name=f"Tweet at {datetime.fromtimestamp(t_time).strftime('%H:%M')}",
-                    name=tweet["full_text"],
-                    line=dict(color=color, width=2),
-                    opacity=0.6,
-                    text=coin_tweet_df[POSTS_TEXT_COLUMN],
-                    #    customdata=coin_tweet_df[HOVER_COLUMNS],
-                    #    colors[i % len(colors)],
+                    name=f"Tweet: {tweet['full_text'][:30]}...",
+                    line=dict(color=color, width=1.5),
+                    opacity=0.4,
                     customdata=single_tweet_data,
                     hovertemplate=full_hovertemplate,
-                    #   name="Tweet Details",
-                    showlegend=True,
+                )
+            )
+
+    if all_normalized_series:
+        agg_df = pd.concat(all_normalized_series)
+        agg_df["relative_hours"] = agg_df["relative_hours"].round(4)
+        mean_impact = (
+            agg_df.groupby("relative_hours")["normalized_price"].mean().reset_index()
+        )
+
+        agg_post_tweet = mean_impact[mean_impact["relative_hours"] > 0]
+        if not agg_post_tweet.empty:
+            agg_max_val = agg_post_tweet["normalized_price"].max()
+            agg_peak_x = agg_post_tweet.loc[
+                agg_post_tweet["normalized_price"].idxmax(), "relative_hours"
+            ]
+
+            impact_fig.add_trace(
+                go.Scatter(
+                    x=mean_impact["relative_hours"],
+                    y=mean_impact["normalized_price"],
+                    mode="lines",
+                    name="AVERAGE IMPACT",
+                    line=dict(color="white", width=3),
+                    opacity=1.0,
+                    hovertemplate=(
+                        "<b>AVERAGE TREND</b><br>"
+                        + "Rel. Time: %{x:.2f}h<br>"
+                        + "Avg Change: %{y:.4f}x<br>"
+                        + "<extra></extra>"
+                    ),
                 )
             )
 
             impact_fig.add_vline(
-                x=peak_time_x,
-                line_dash="dot",
-                line_width=1,
-                line_color=color,
-                opacity=0.5,
+                x=agg_peak_x,
+                line_dash="dash",
+                line_width=3,
+                line_color="white",
+                annotation_text=f"AVG PEAK: {agg_max_val:.3f}x",
+                annotation_position="top right",
             )
 
     return impact_fig, max_vals
