@@ -1,7 +1,6 @@
 import dash
-from dash import html, dcc, callback, Output, Input, State
+from dash import html
 import dash_bootstrap_components as dbc
-from src.config.config import DEFAULT_DOGE_KEYWORDS, DOGE_MAX_DATE, DOGE_MIN_DATE
 
 dash.register_page(__name__, path="/analysis")
 

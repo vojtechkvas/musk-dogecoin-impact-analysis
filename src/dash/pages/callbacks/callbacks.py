@@ -4,18 +4,16 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-import src.config.config as config
-import src.data_utils.loaders as loaders
-import src.data_utils.processing as processing
 from dash import Input, Output, State, callback
+from src.config import config
 from src.config.config import (
     FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE,
     HOVER_COLUMNS,
     POSTS_TEXT_COLUMN,
     RELATIVE_TIME_SPREAD_HOURS,
 )
-
-from ...app import app
+from src.dash.app import app
+from src.data_utils import loaders, processing
 
 STOCK_DATA = loaders.load_data(
     config.PROCESSED_DIR,
@@ -93,13 +91,13 @@ def update_dashboard(date_from, date_to, text_filter):
     fig.update_layout(
         template="plotly_dark",
         height=600,
-        legend=dict(
-            orientation="h",
-            yanchor="top",
-            y=-0.2,
-            xanchor="center",
-            x=0.5,
-        ),
+        legend={
+            "orientation": "h",
+            "yanchor": "top",
+            "y": -0.2,
+            "xanchor": "center",
+            "x": 0.5,
+        },
     )
     fig.add_trace(
         go.Scatter(
@@ -107,7 +105,7 @@ def update_dashboard(date_from, date_to, text_filter):
             y=coin_stock_df["open"],
             name="Price (USD)",
             yaxis="y1",
-            line=dict(color="blue"),
+            line={"color": "blue"},
         )
     )
 
@@ -117,19 +115,14 @@ def update_dashboard(date_from, date_to, text_filter):
     y_max = coin_stock_df["open"].max()
 
     for i, (idx, row) in enumerate(coin_tweet_df.iterrows()):
-        tweet_text = str(row[POSTS_TEXT_COLUMN])
-        tweet_time = row["created_at"]
-
-        short_text = (tweet_text[:30] + "..") if len(tweet_text) > 30 else tweet_text
-        short_text = tweet_text
 
         fig.add_trace(
             go.Scatter(
-                x=[tweet_time, tweet_time],
+                x=[row["created_at"], row["created_at"]],
                 y=[y_min, y_max],
                 mode="lines",
-                name=short_text,
-                line=dict(color=colors[i % len(colors)], width=1),
+                name=str(row[POSTS_TEXT_COLUMN]),
+                line={"color": colors[i % len(colors)], "width": 1},
                 #   legendgroup="tweets",
                 showlegend=True,
                 hoverinfo="skip",
@@ -152,10 +145,10 @@ def update_dashboard(date_from, date_to, text_filter):
             x=coin_tweet_df["created_at"],
             y=[coin_stock_df["open"].mean()] * len(coin_tweet_df),
             mode="markers",
-            marker=dict(
-                size=15,
-                color="rgba(0,0,0,0)",
-            ),
+            marker={
+                "size": 15,
+                "color": "rgba(0,0,0,0)",
+            },
             text=coin_tweet_df[POSTS_TEXT_COLUMN],
             customdata=coin_tweet_df[HOVER_COLUMNS],
             hovertemplate=full_hovertemplate,
@@ -169,13 +162,11 @@ def update_dashboard(date_from, date_to, text_filter):
         hovermode="x unified",
     )
 
-    kpi_tweets = f"{len(coin_tweet_df):,}"
-
     kpi_price = (
         f"{coin_stock_df['open'].mean():,.4f}" if not coin_stock_df.empty else "N/A"
     )
 
-    impact_fig, max_vals = create_tweet_impact_figure(
+    impact_fig, _ = create_tweet_impact_figure(
         coin_tweet_df, coin_stock_df, full_hovertemplate, HOVER_COLUMNS, colors
     )
 
@@ -186,7 +177,7 @@ def update_dashboard(date_from, date_to, text_filter):
     return (
         fig,
         impact_fig,
-        kpi_tweets,
+        f"{len(coin_tweet_df):,}",
         kpi_price,
         f"{avg_price_during_tweet:.4f}",
     )
@@ -198,7 +189,6 @@ def create_tweet_impact_figure(
     full_hovertemplate,
     hover_columns,
     colors,
-    timespread_hours=RELATIVE_TIME_SPREAD_HOURS,
 ):
     impact_fig = go.Figure()
     impact_fig.update_layout(
@@ -208,7 +198,13 @@ def create_tweet_impact_figure(
         yaxis_title="Normalized Price (Relative to Tweet)",
         hovermode="closest",
         height=900,
-        legend=dict(orientation="v", yanchor="top", y=-0.2, xanchor="center", x=0.5),
+        legend={
+            "orientation": "v",
+            "yanchor": "top",
+            "y": -0.2,
+            "xanchor": "center",
+            "x": 0.5,
+        },
     )
 
     max_vals = []
@@ -219,8 +215,8 @@ def create_tweet_impact_figure(
         t_time = tweet["created_at"].floor("min").timestamp()
 
         window_df = stock_data_full[
-            (stock_data_full["timestamp"] >= t_time - timespread_hours)
-            & (stock_data_full["timestamp"] <= t_time + timespread_hours)
+            (stock_data_full["timestamp"] >= t_time - RELATIVE_TIME_SPREAD_HOURS)
+            & (stock_data_full["timestamp"] <= t_time + RELATIVE_TIME_SPREAD_HOURS)
         ].copy()
 
         if not window_df.empty:
@@ -261,7 +257,7 @@ def create_tweet_impact_figure(
                     y=window_df["normalized_price"],
                     mode="lines",
                     name=f"Tweet: {tweet['full_text'][:30]}...",
-                    line=dict(color=color, width=1.5),
+                    line={"color": color, "width": 1.5},
                     opacity=0.4,
                     customdata=single_tweet_data,
                     hovertemplate=full_hovertemplate,
@@ -288,7 +284,7 @@ def create_tweet_impact_figure(
                     y=mean_impact["normalized_price"],
                     mode="lines",
                     name="AVERAGE IMPACT",
-                    line=dict(color="white", width=3),
+                    line={"color": "white", "width": 3},
                     opacity=1.0,
                     hovertemplate=(
                         "<b>AVERAGE TREND</b><br>"

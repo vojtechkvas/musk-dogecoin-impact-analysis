@@ -120,7 +120,7 @@ main_layout = dbc.Container(
                 ),
                 dbc.Col(
                     create_card(
-                        "Avg. Sentiment",
+                        "Avg. price during tweet",
                         "kpi-avg-price-during-tweet",
                         "fa-solid fa-gauge",
                     ),
@@ -178,14 +178,4 @@ main_layout = dbc.Container(
 )
 
 
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
 layout = dbc.Container([main_layout], fluid=True)
