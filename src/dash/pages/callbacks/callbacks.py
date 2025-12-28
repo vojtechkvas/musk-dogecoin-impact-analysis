@@ -23,7 +23,7 @@ STOCK_DATA = loaders.load_data(
     types=config.DOGE_DTYPES,
     skiprows=1,
 )
-print(STOCK_DATA.head())
+
 STOCK_DATA = processing.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
 
 TWEET_DATA = loaders.load_data(
@@ -42,10 +42,10 @@ print("Data Loaded: STOCK_DATA and TWEET_DATA")
 @callback(
     Output("price-volume-graph", "figure"),
     Output("tweet-impact-graph", "figure"),
-    Output("filtered-tweets-output", "value"),
+    #    Output("filtered-tweets-output", "value"),
     Output("kpi-total-tweets", "children"),
     Output("kpi-avg-price", "children"),
-    Output("kpi-sentiment", "children"),
+    Output("kpi-avg-price-during-tweet", "children"),
     Input("date-from-picker", "date"),
     Input("date-to-picker", "date"),
     Input("text-filter-input", "value"),
@@ -67,7 +67,7 @@ def update_dashboard(date_from, date_to, text_filter):
             go.Figure(),
             "Please select both a start and end date.",
             "N/A",
-            "$ N/A",
+            "N/A",
             "N/A",
         )
     date_from_timestamp = processing.convert_date_to_timestamp(date_from)
@@ -169,12 +169,10 @@ def update_dashboard(date_from, date_to, text_filter):
         hovermode="x unified",
     )
 
-    tweets_text = "www"
-
     kpi_tweets = f"{len(coin_tweet_df):,}"
 
     kpi_price = (
-        f"${coin_stock_df['open'].mean():,.4f}" if not coin_stock_df.empty else "$ N/A"
+        f"{coin_stock_df['open'].mean():,.4f}" if not coin_stock_df.empty else "N/A"
     )
 
     impact_fig, max_vals = create_tweet_impact_figure(
@@ -182,9 +180,17 @@ def update_dashboard(date_from, date_to, text_filter):
     )
     print(max_vals)
 
-    kpi_sentiment = "ffff"
+    avg_price_during_tweet = processing.calculate_avg_price_at_tweet_time(
+        coin_tweet_df, coin_stock_df
+    )
     print("Dashboard updated successfully.")
-    return fig, impact_fig, tweets_text, kpi_tweets, kpi_price, kpi_sentiment
+    return (
+        fig,
+        impact_fig,
+        kpi_tweets,
+        kpi_price,
+        f"{avg_price_during_tweet:.4f}",
+    )
 
 
 def create_tweet_impact_figure(
@@ -215,11 +221,6 @@ def create_tweet_impact_figure(
 
     print("Creating tweet impact figure...")
     print("Creating tweet impact figure...")
-    print("Creating tweet impact figure...")
-    print("Creating tweet impact figure...")
-    print("Creating tweet impact figure...")
-
-    print()
 
     coin_tweet_df.info()
     max_vals = []
@@ -227,14 +228,7 @@ def create_tweet_impact_figure(
 
         color = colors[i % len(colors)]
 
-        #  print(kk)
-        #  print(tweet)
         t_time = tweet["created_at"].floor("min").timestamp()
-        print(f"Processing tweet at time: {tweet['timestamp'] }")
-        print(f"Processing tweet at time: {t_time}")
-        print(f"created_at tweet at time: { (tweet['created_at'] )}")
-        print(f"created_at tweet at time: { (tweet['created_at'] ) }")
-        print(f"created_at tweet at time: {type(tweet['created_at'] )}")
 
         window_df = stock_data_full[
             (stock_data_full["timestamp"] >= t_time - timespread_hours)
@@ -266,11 +260,6 @@ def create_tweet_impact_figure(
                 positive_hours_df["normalized_price"].idxmax(), "relative_hours"
             ]
             max_vals.append((max_val, peak_time_x))
-            print(window_df["relative_hours"].min(), window_df["relative_hours"].max())
-            print("tweet[full_text]")
-            print("t_time")
-            print(tweet["full_text"])
-            print(t_time)
 
             single_tweet_data = [tweet[hover_columns].values] * len(window_df)
 
@@ -292,17 +281,7 @@ def create_tweet_impact_figure(
                     showlegend=True,
                 )
             )
-            """
-            impact_fig.add_hline(
-                y=max_val,
-                line_dash="dot",
-                line_width=1,
-                line_color=color,
-                annotation_text=f"Peak: {max_val:.2f}",
-                annotation_position="top right",
-                opacity=0.5
-            )
-            """
+
             impact_fig.add_vline(
                 x=peak_time_x,
                 line_dash="dot",
@@ -310,10 +289,6 @@ def create_tweet_impact_figure(
                 line_color=color,
                 opacity=0.5,
             )
-
-    # Add a central vertical line representing the exact tweet moment
-    #   impact_fig.add_vline(x=0, line_width=2, line_dash="dash", line_color="white")
-    #   impact_fig.add_hline(y=1.0, line_width=1, line_color="pink", line_dash="dash")
 
     return impact_fig, max_vals
 

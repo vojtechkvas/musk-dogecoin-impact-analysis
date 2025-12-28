@@ -20,6 +20,47 @@ from src.config.config import (
 )
 
 
+def calculate_avg_price_at_tweet_time(
+    tweet_df: pd.DataFrame, stock_df: pd.DataFrame
+) -> float:
+    """
+    Calculates the average asset price at the specific minutes tweets were posted
+    by rounding timestamps to the nearest minute.
+
+    Args:
+        tweet_df (pd.DataFrame): DataFrame containing tweet data with a 'timestamp' column.
+        stock_df (pd.DataFrame): DataFrame containing stock data with 'timestamp' and 'open' columns.
+
+    Returns:
+        float: The average price at the time of tweets. Returns 0.0 if data is
+               missing or no matches are found.
+    """
+
+    if tweet_df.empty or stock_df.empty:
+        return 0.0
+
+    tweet_minutes = pd.to_datetime(tweet_df["timestamp"], unit="s").dt.floor("min")
+    stock_minutes = pd.to_datetime(stock_df["timestamp"], unit="s").dt.floor("min")
+
+    price_lookup = pd.DataFrame(
+        {"align_dt": stock_minutes, "price": stock_df["open"]}
+    ).drop_duplicates(subset=["align_dt"])
+
+    tweets_with_price = pd.merge(
+        pd.DataFrame({"align_dt": tweet_minutes}),
+        price_lookup,
+        on="align_dt",
+        how="left",
+    )
+
+    avg_val = tweets_with_price["price"].mean()
+
+    if pd.isna(avg_val):
+        return 0.0
+
+    return float(avg_val)
+
+
 def convert_date_to_timestamp(date_string: str, date_format: str = "%Y-%m-%d") -> int:
     """
     Converts a date string in YYYY-MM-DD format to a Unix timestamp.

@@ -30,7 +30,7 @@ main_layout = dbc.Container(
             [
                 dbc.Col(
                     html.H1(
-                        "Crypto Tweet Sentiment Dashboard",
+                        "Dogecoin Tweets Visualization",
                         className="text-center my-4 text-primary",
                     ),
                     width=12,
@@ -119,7 +119,11 @@ main_layout = dbc.Container(
                     md=4,
                 ),
                 dbc.Col(
-                    create_card("Avg. Sentiment", "kpi-sentiment", "fa-solid fa-gauge"),
+                    create_card(
+                        "Avg. Sentiment",
+                        "kpi-avg-price-during-tweet",
+                        "fa-solid fa-gauge",
+                    ),
                     md=4,
                 ),
             ],
@@ -135,27 +139,6 @@ main_layout = dbc.Container(
                                 dcc.Graph(
                                     id="price-volume-graph",
                                     figure={"data": [], "layout": {}},
-                                )
-                            ),
-                        ]
-                    ),
-                    width=12,
-                )
-            ],
-            className="g-4 mb-4",
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    dbc.Card(
-                        [
-                            #   dbc.CardHeader(html.H4("Filtered Tweets (Text Display)")),
-                            dbc.CardBody(
-                                dcc.Textarea(
-                                    id="filtered-tweets-output",
-                                    style={"width": "100%", "height": 10},
-                                    readOnly=True,
-                                    placeholder="Filtered tweets will appear here...",
                                 )
                             ),
                         ]
@@ -195,4 +178,14 @@ main_layout = dbc.Container(
 )
 
 
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
 layout = dbc.Container([main_layout], fluid=True)
