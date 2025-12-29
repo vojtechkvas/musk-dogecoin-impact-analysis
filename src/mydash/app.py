@@ -4,10 +4,10 @@ This module configures the Dash app instance, themes, and multi-page routing.
 """
 
 import dash_bootstrap_components as dbc
-
 from dash import Dash
+
 from src.mydash import router
-from src.mydash.pages.callbacks import callbacks
+from src.mydash.pages.callbacks import home_callbacks  # pylint: disable=unused-import
 
 external_stylesheets = [dbc.themes.CYBORG, dbc.icons.FONT_AWESOME]
 

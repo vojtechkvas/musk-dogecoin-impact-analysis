@@ -71,9 +71,9 @@ main_layout = dbc.Container(
                             id="mentionning-of-doge-department-button",
                             n_clicks=0,
                             color="primary",
-                            className="mt-2",
+                            # className="mt-2",
                         ),
-                        className="mt-2",
+                        #    className="mt-2",
                     ),
                     md=4,
                     xs=12,
@@ -195,11 +195,4 @@ main_layout = dbc.Container(
 )
 
 
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
-layout = dbc.Container([main_layout], fluid=True)
 layout = dbc.Container([main_layout], fluid=True)
