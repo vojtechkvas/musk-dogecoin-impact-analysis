@@ -216,7 +216,7 @@ def update_dashboard(
     )
 
     impact_fig, _ = create_tweet_impact_figure(
-        coin_tweet_df, coin_stock_df, full_hovertemplate, HOVER_COLUMNS, colors
+        coin_tweet_df, coin_stock_df, full_hovertemplate, colors
     )
 
     avg_price_during_tweet = processing.calculate_avg_price_at_tweet_time(
@@ -294,11 +294,102 @@ def _add_average_trend(
             )
 
 
+def _process_single_tweet(
+    tweet: pd.Series,
+    stock_data_full: pd.DataFrame,
+    color: str,
+    impact_fig: go.Figure,
+    full_hovertemplate: str,
+) -> tuple[pd.DataFrame | None, tuple[float, float] | None]:
+    """
+    Computes and plots the normalized price impact for a single tweet event.
+
+    This helper function extracts a relative time window around the tweet's
+    creation time, normalizes asset prices to the price at tweet-time,
+    plots the resulting price trajectory on the provided Plotly figure,
+    and identifies the peak post-tweet price movement.
+
+    Args:
+        tweet (pd.Series): A single row from the tweet DataFrame containing
+            tweet metadata, including the 'created_at' timestamp.
+        stock_data_full (pd.DataFrame): Full historical price data with
+            'timestamp' and 'open' price columns.
+        color (str): Color used for the tweet's price trajectory and
+            associated annotations.
+        impact_fig (go.Figure): Plotly figure to which the tweet impact
+            trace and peak marker will be added.
+        full_hovertemplate (str): HTML hover template used to render
+            detailed tweet metadata on hover.
+
+    Returns:
+        tuple: A 2-element tuple containing:
+            - pd.DataFrame | None: DataFrame with 'relative_hours' and
+              'normalized_price' for the tweet window, or None if no
+              valid price data was available.
+            - tuple[float, float] | None: A tuple of (peak_price, peak_hour)
+              for the post-tweet window, or None if no post-event peak exists.
+    """
+    t_time = tweet["created_at"].floor("min").timestamp()
+
+    window_df = stock_data_full[
+        (stock_data_full["timestamp"] >= t_time - RELATIVE_TIME_SPREAD_HOURS)
+        & (stock_data_full["timestamp"] <= t_time + RELATIVE_TIME_SPREAD_HOURS)
+    ].copy()
+
+    if window_df.empty:
+        return None, None
+
+    tweet_price_row = window_df[window_df["timestamp"] == t_time]
+    if tweet_price_row.empty:
+        tweet_price_row = window_df.iloc[
+            (window_df["timestamp"] - t_time).abs().argsort()[:1]
+        ]
+
+    price_at_tweet = tweet_price_row["open"].iloc[0]
+    window_df["normalized_price"] = window_df["open"] / price_at_tweet
+    window_df["relative_hours"] = (window_df["timestamp"] - t_time) / 3600
+
+    positive_df = window_df[window_df["relative_hours"] > 0]
+    peak_info = None
+
+    if not positive_df.empty:
+        max_val = positive_df["normalized_price"].max()
+        peak_x = positive_df.loc[
+            positive_df["normalized_price"].idxmax(), "relative_hours"
+        ]
+
+        impact_fig.add_vline(
+            x=peak_x,
+            line_dash="dot",
+            line_width=1,
+            line_color=color,
+            opacity=0.3,
+        )
+
+        peak_info = (max_val, peak_x)
+
+    customdata = [tweet[HOVER_COLUMNS].values] * len(window_df)
+
+    impact_fig.add_trace(
+        go.Scatter(
+            x=window_df["relative_hours"],
+            y=window_df["normalized_price"],
+            mode="lines",
+            name=f"Tweet: {tweet['full_text'][:30]}...",
+            line={"color": color, "width": 1.5},
+            opacity=0.4,
+            customdata=customdata,
+            hovertemplate=full_hovertemplate,
+        )
+    )
+
+    return window_df[["relative_hours", "normalized_price"]], peak_info
+
+
 def create_tweet_impact_figure(
     coin_tweet_df: pd.DataFrame,
     stock_data_full: pd.DataFrame,
     full_hovertemplate: str,
-    hover_columns: list[str],
     colors: list[str],
 ) -> tuple[go.Figure, list[tuple[float, float]]]:
     """
@@ -317,8 +408,6 @@ def create_tweet_impact_figure(
             DataFrame with 'timestamp' and 'open' columns.
         full_hovertemplate (str): A string defining the HTML layout for the
             Plotly hover labels.
-        hover_columns (list[str]): List of column names from the tweet data to
-            be included in the hover information.
         colors (list[str]): A list of color hex codes or names to cycle through
             for different tweet traces.
 
@@ -346,61 +435,25 @@ def create_tweet_impact_figure(
         },
     )
 
-    max_vals, all_normalized_series = [], []
+    max_vals: list[tuple[float, float]] = []
+    all_normalized_series: list[pd.DataFrame] = []
 
     for i, (_, tweet) in enumerate(coin_tweet_df.iterrows()):
         color = colors[i % len(colors)]
-        t_time = tweet["created_at"].floor("min").timestamp()
 
-        window_df = stock_data_full[
-            (stock_data_full["timestamp"] >= t_time - RELATIVE_TIME_SPREAD_HOURS)
-            & (stock_data_full["timestamp"] <= t_time + RELATIVE_TIME_SPREAD_HOURS)
-        ].copy()
+        series_df, peak_info = _process_single_tweet(
+            tweet=tweet,
+            stock_data_full=stock_data_full,
+            color=color,
+            impact_fig=impact_fig,
+            full_hovertemplate=full_hovertemplate,
+        )
 
-        if not window_df.empty:
-            tweet_price_row = window_df[window_df["timestamp"] == t_time]
-            if tweet_price_row.empty:
-                tweet_price_row = window_df.iloc[
-                    (window_df["timestamp"] - t_time).abs().argsort()[:1]
-                ]
+        if series_df is not None:
+            all_normalized_series.append(series_df)
 
-            price_at_tweet = tweet_price_row["open"].values[0]
-            window_df["normalized_price"] = window_df["open"] / price_at_tweet
-            window_df["relative_hours"] = (window_df["timestamp"] - t_time) / 3600
-
-            all_normalized_series.append(
-                window_df[["relative_hours", "normalized_price"]]
-            )
-
-            positive_hours_df = window_df[window_df["relative_hours"] > 0]
-            if not positive_hours_df.empty:
-                max_val = positive_hours_df["normalized_price"].max()
-                peak_time_x = positive_hours_df.loc[
-                    positive_hours_df["normalized_price"].idxmax(), "relative_hours"
-                ]
-                max_vals.append((max_val, peak_time_x))
-
-                impact_fig.add_vline(
-                    x=peak_time_x,
-                    line_dash="dot",
-                    line_width=1,
-                    line_color=color,
-                    opacity=0.3,
-                )
-
-            single_tweet_data = [tweet[hover_columns].values] * len(window_df)
-            impact_fig.add_trace(
-                go.Scatter(
-                    x=window_df["relative_hours"],
-                    y=window_df["normalized_price"],
-                    mode="lines",
-                    name=f"Tweet: {tweet['full_text'][:30]}...",
-                    line={"color": color, "width": 1.5},
-                    opacity=0.4,
-                    customdata=single_tweet_data,
-                    hovertemplate=full_hovertemplate,
-                )
-            )
+        if peak_info is not None:
+            max_vals.append(peak_info)
 
     _add_average_trend(impact_fig, all_normalized_series)
 
