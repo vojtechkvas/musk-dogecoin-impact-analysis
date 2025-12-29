@@ -13,10 +13,10 @@ Components:
     - Graphs: Time-series analysis of price/volume and relative price impact analysis.
 """
 
-import dash_bootstrap_components as dbc
-
 import dash
+import dash_bootstrap_components as dbc
 from dash import dcc, html
+
 from src.config.config import DEFAULT_DOGE_KEYWORDS, DOGE_MAX_DATE, DOGE_MIN_DATE
 
 dash.register_page(__name__, path="/")
@@ -86,10 +86,7 @@ main_layout = dbc.Container(
                         initial_visible_month=DOGE_MIN_DATE,
                         date=DOGE_MIN_DATE,
                         placeholder="Date From",
-                        #   className="dbc-dark-theme text-white bg-dark border-secondary",
-                        #  className="text-white bg-dark border-secondary",
                         calendar_orientation="vertical",
-                        #  style={'color': 'white', 'background-color': '#303030', 'border': '1px solid #6c757d'} # Dark styles for the input box itself
                     ),
                     md=2,
                     xs=6,
@@ -198,4 +195,11 @@ main_layout = dbc.Container(
 )
 
 
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
+layout = dbc.Container([main_layout], fluid=True)
 layout = dbc.Container([main_layout], fluid=True)

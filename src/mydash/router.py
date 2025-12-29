@@ -7,12 +7,23 @@ content. It uses Dash Bootstrap Components for a responsive design and
 'dash.page_container' to manage page routing.
 """
 
+import dash
 import dash_bootstrap_components as dbc
 
-import dash
 
+def layout() -> dbc.Container:
+    """
+    Constructs the top-level UI structure for the Dash application.
 
-def layout():
+    This function defines a responsive Bootstrap container that houses the
+    global navigation bar and a dynamic content area. The navigation bar
+    includes links to the 'Home' and 'Deep Analysis' pages, while
+    'dash.page_container' serves as the anchor for multi-page routing.
+
+    Returns:
+        dbc.Container: A Dash Bootstrap Components Container object
+                       representing the root layout of the app.
+    """
     return dbc.Container(
         [
             dbc.NavbarSimple(

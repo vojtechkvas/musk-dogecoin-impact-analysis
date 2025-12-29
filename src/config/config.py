@@ -1,6 +1,7 @@
 """
 Configuration constants for the Elon Musk & Dogecoin Impact Analysis project.
-Defines file paths, data schemas, filtering keywords, and visualization settings.
+Defines file paths, data schemas, filtering keywords, and
+visualization settings.
 """
 
 RAW_TWEETS_POSTS = "all_musk_posts.csv"
@@ -87,19 +88,12 @@ POSTS_DTYPES = {
     "retweet": "string",
 }
 
-DOGE_KEYWORDS = ["@DOGE"]
-DOGE_KEYWORDS = ["dogecoin"]
-DOGE_KEYWORDS = ["doge"]
-DOGE_KEYWORDS = ["dogecoin"]
-DOGE_KEYWORDS = ["doge", "dogecoin", "Ðoge", "Doge", "DOGE", "crypto"]
 DOGE_KEYWORDS = ["dogecoin", "Ðoge", "crypto"]
 DOGE_KEYWORD = "doge"
 DEFAULT_DOGE_KEYWORDS = " dogecoin "
 
 FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE = "2024-08-02"
 
-DOGE_MIN_DATE = "2025-07-05"
-DOGE_MIN_DATE = "2024-07-05"
 DOGE_MIN_DATE = "2019-07-05"
 
 RELATIVE_TIME_SPREAD_HOURS = 6 * 3600

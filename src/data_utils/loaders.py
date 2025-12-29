@@ -26,14 +26,14 @@ def load_data(
     existence of the file, and reads it using specified formatting options.
 
     Args:
-        directory (List[str]): A list of strings representing the path components
-            (e.g., ["data", "raw"]).
+        directory (List[str]): A list of strings representing the path
+            components (e.g., ["data", "raw"]).
         filename (str): The name of the file to load (e.g., "results.csv").
         separator (str, optional): The delimiter to use. If None, pandas will
             attempt to detect it or use the default (usually a comma).
-        types (Optional[Dict[str, str]], name): A dictionary mapping column names
-            to their expected data types. If provided, these keys are also used
-            as the column headers.
+        types (Optional[Dict[str, str]], name): A dictionary mapping column
+        names to their expected data types. If provided, these keys are also
+        used as the column headers.
         skiprows (int): Number of lines to skip at the start of the file.
             Defaults to 0.
 
@@ -47,7 +47,8 @@ def load_data(
     file_path = os.path.join(*directory, filename)
 
     if not os.path.exists(file_path):
-        raise FileNotFoundError(f"The file {filename} does not exist in {directory}")
+        message = f"The file {filename} does not exist in {directory}"
+        raise FileNotFoundError(message)
 
     kwargs = {}
     if separator is not None:
@@ -66,13 +67,14 @@ def save_data(directory: List[str], filename: str, df: pd.DataFrame) -> None:
     """
     Saves a pandas DataFrame to a CSV file in a specified directory.
 
-    This function constructs a directory path from a list of strings, ensures the
-    directory exists (creating it if necessary), and writes the DataFrame to a
-    CSV file without including the index.
+    This function constructs a directory path from a list of strings,
+    ensures the directory exists (creating it if necessary), and
+    writes the DataFrame to a CSV file without including the index.
 
     Args:
-        directory (List[str]): A list of strings representing the path components
-            where the file should be saved (e.g., ["data", "processed"]).
+        directory (List[str]): A list of strings representing the path
+            components where the file should be saved
+            (e.g., ["data", "processed"]).
         filename (str): The name of the file to be saved (e.g., "output.csv").
         df (pd.DataFrame): The pandas DataFrame to be exported.
 

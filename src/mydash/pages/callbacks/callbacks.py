@@ -1,8 +1,16 @@
+"""
+Dashboard Callback Module for Dogecoin Price and Social Media Impact Analysis.
+
+This module handles the data visualization logic for the Dash application,
+including price-volume charts, tweet impact analysis, and KPI calculations
+based on filtered time ranges and text queries.
+"""
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-
 from dash import Input, Output, State, callback
+
 from src.config import config
 from src.config.config import (
     FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE,
@@ -10,8 +18,6 @@ from src.config.config import (
     POSTS_TEXT_COLUMN,
     RELATIVE_TIME_SPREAD_HOURS,
 )
-
-# from src.dash.app import app
 from src.data_utils import loaders, processing
 
 STOCK_DATA = loaders.load_data(
@@ -39,16 +45,33 @@ print("Data Loaded: STOCK_DATA and TWEET_DATA")
 @callback(
     Output("price-volume-graph", "figure"),
     Output("tweet-impact-graph", "figure"),
-    #    Output("filtered-tweets-output", "value"),
     Output("kpi-total-tweets", "children"),
     Output("kpi-avg-price", "children"),
     Output("kpi-avg-price-during-tweet", "children"),
     Input("date-from-picker", "date"),
     Input("date-to-picker", "date"),
     Input("text-filter-input", "value"),
-    #  prevent_initial_call=True,
 )
-def update_dashboard(date_from, date_to, text_filter):
+def update_dashboard(
+    date_from: str, date_to: str, text_filter: str
+) -> tuple[go.Figure, go.Figure, str, str, str]:
+    """
+    Updates the dashboard visualizations and KPIs based on user-selected
+    filters for dates and tweet content.
+
+    Args:
+        date_from (str): The start date string from the date picker (ISO format).
+        date_to (str): The end date string from the date picker (ISO format).
+        text_filter (str): Text query to filter tweets by their content.
+
+    Returns:
+        tuple: A 5-element tuple containing:
+            - fig (go.Figure): The price-volume Scatter plot with tweet markers.
+            - impact_fig (go.Figure): The relative time impact analysis figure.
+            - total_tweets_kpi (str): Formatted string of total filtered tweets.
+            - avg_price_kpi (str): Formatted string of the mean stock price.
+            - impact_kpi (str): Formatted string of avg price at tweet timestamps.
+    """
 
     print(
         f"Filters Applied - Date From: {date_from}, Date To: {date_to}, Text Filter: {text_filter}"
@@ -113,7 +136,7 @@ def update_dashboard(date_from, date_to, text_filter):
     y_min = coin_stock_df["open"].min()
     y_max = coin_stock_df["open"].max()
 
-    for i, (idx, row) in enumerate(coin_tweet_df.iterrows()):
+    for i, (_, row) in enumerate(coin_tweet_df.iterrows()):
 
         fig.add_trace(
             go.Scatter(
@@ -122,7 +145,6 @@ def update_dashboard(date_from, date_to, text_filter):
                 mode="lines",
                 name=str(row[POSTS_TEXT_COLUMN]),
                 line={"color": colors[i % len(colors)], "width": 1},
-                #   legendgroup="tweets",
                 showlegend=True,
                 hoverinfo="skip",
             )
@@ -183,12 +205,40 @@ def update_dashboard(date_from, date_to, text_filter):
 
 
 def create_tweet_impact_figure(
-    coin_tweet_df,
-    stock_data_full,
-    full_hovertemplate,
-    hover_columns,
-    colors,
-):
+    coin_tweet_df: pd.DataFrame,
+    stock_data_full: pd.DataFrame,
+    full_hovertemplate: str,
+    hover_columns: list[str],
+    colors: list[str],
+) -> tuple[go.Figure, list[tuple[float, float]]]:
+    """
+    Creates a Plotly figure showing the normalized price impact of tweets
+    over a relative time window.
+
+    This function calculates asset price changes relative to the exact moment
+    a tweet was posted, normalizes those prices (setting the price at
+    tweet-time to 1.0), and plots both individual tweet impacts and an
+    aggregated average trend.
+
+    Args:
+        coin_tweet_df (pd.DataFrame): DataFrame containing filtered tweet data
+            with 'created_at' and 'timestamp' columns.
+        stock_data_full (pd.DataFrame): The complete historical stock price
+            DataFrame with 'timestamp' and 'open' columns.
+        full_hovertemplate (str): A string defining the HTML layout for the
+            Plotly hover labels.
+        hover_columns (list[str]): List of column names from the tweet data to
+            be included in the hover information.
+        colors (list[str]): A list of color hex codes or names to cycle through
+            for different tweet traces.
+
+    Returns:
+        tuple: A 2-element tuple containing:
+            - impact_fig (go.Figure): The generated Plotly figure showing
+              normalized price trajectories.
+            - max_vals (list[tuple[float, float]]): A list of tuples containing
+              (peak_price, peak_hour) for each tweet's post-event window.
+    """
     impact_fig = go.Figure()
     impact_fig.update_layout(
         title="Price Impact: 6 hours Before vs 6 hours after Tweets",
@@ -209,7 +259,7 @@ def create_tweet_impact_figure(
     max_vals = []
     all_normalized_series = []
 
-    for i, (kk, tweet) in enumerate(coin_tweet_df.iterrows()):
+    for i, (_, tweet) in enumerate(coin_tweet_df.iterrows()):
         color = colors[i % len(colors)]
         t_time = tweet["created_at"].floor("min").timestamp()
 

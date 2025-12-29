@@ -24,12 +24,14 @@ def calculate_avg_price_at_tweet_time(
     tweet_df: pd.DataFrame, stock_df: pd.DataFrame
 ) -> float:
     """
-    Calculates the average asset price at the specific minutes tweets were posted
-    by rounding timestamps to the nearest minute.
+    Calculates the average asset price at the specific minutes tweets were
+    posted by rounding timestamps to the nearest minute.
 
     Args:
-        tweet_df (pd.DataFrame): DataFrame containing tweet data with a 'timestamp' column.
-        stock_df (pd.DataFrame): DataFrame containing stock data with 'timestamp' and 'open' columns.
+        tweet_df (pd.DataFrame): DataFrame containing tweet data with
+                                a 'timestamp' column.
+        stock_df (pd.DataFrame): DataFrame containing stock data with
+                                'timestamp' and 'open' columns.
 
     Returns:
         float: The average price at the time of tweets. Returns 0.0 if data is
