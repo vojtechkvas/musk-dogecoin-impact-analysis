@@ -42,73 +42,28 @@ TWEET_DATA = processing.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
 print("Data Loaded: STOCK_DATA and TWEET_DATA")
 
 
-@callback(
-    Output("price-volume-graph", "figure"),
-    Output("tweet-impact-graph", "figure"),
-    Output("kpi-total-tweets", "children"),
-    Output("kpi-avg-price", "children"),
-    Output("kpi-avg-price-during-tweet", "children"),
-    Input("date-from-picker", "date"),
-    Input("date-to-picker", "date"),
-    Input("text-filter-input", "value"),
-)
-def update_dashboard(
-    date_from: str, date_to: str, text_filter: str
-) -> tuple[go.Figure, go.Figure, str, str, str]:
+def _build_main_price_figure(
+    coin_stock_df: pd.DataFrame, coin_tweet_df: pd.DataFrame
+) -> tuple[go.Figure, str, list[str]]:
     """
-    Updates the dashboard visualizations and KPIs based on user-selected
-    filters for dates and tweet content.
+    Constructs the primary price-volume Scatter plot and generates visual metadata.
+
+    This helper function handles the dark-mode layout configuration, plots the
+    asset price line, adds vertical markers for tweet events, and constructs
+    the standardized hover template used across dashboard figures.
 
     Args:
-        date_from (str): The start date string from the date picker (ISO format).
-        date_to (str): The end date string from the date picker (ISO format).
-        text_filter (str): Text query to filter tweets by their content.
+        coin_stock_df (pd.DataFrame): DataFrame containing stock price data
+            with 'created_at' and 'open' columns.
+        coin_tweet_df (pd.DataFrame): DataFrame containing filtered tweet data
+            with 'created_at' and content columns.
 
     Returns:
-        tuple: A 5-element tuple containing:
-            - fig (go.Figure): The price-volume Scatter plot with tweet markers.
-            - impact_fig (go.Figure): The relative time impact analysis figure.
-            - total_tweets_kpi (str): Formatted string of total filtered tweets.
-            - avg_price_kpi (str): Formatted string of the mean stock price.
-            - impact_kpi (str): Formatted string of avg price at tweet timestamps.
+        tuple: A 3-element tuple containing:
+            - fig (go.Figure): The main Plotly Figure with price and tweet traces.
+            - full_hovertemplate (str): The HTML string for unified hover styling.
+            - colors (list[str]): The qualitative color palette used for traces.
     """
-
-    print(
-        f"Filters Applied - Date From: {date_from}, Date To: {date_to}, Text Filter: {text_filter}"
-    )
-
-    print(f"Raw Date Inputs - From: {date_from}, To: {date_to}")
-
-    if date_from is None or date_to is None:
-        print("Date input is None. Returning empty dashboard state.")
-
-        return (
-            go.Figure(),
-            go.Figure(),
-            "Please select both a start and end date.",
-            "N/A",
-            "N/A",
-            "N/A",
-        )
-    date_from_timestamp = processing.convert_date_to_timestamp(date_from)
-    date_to_timestamp = processing.convert_date_to_timestamp(date_to)
-
-    coin_stock_df = STOCK_DATA
-    coin_tweet_df = TWEET_DATA
-
-    coin_stock_df = coin_stock_df[
-        (coin_stock_df["timestamp"] >= date_from_timestamp)
-        & (coin_stock_df["timestamp"] <= date_to_timestamp)
-    ]
-    coin_tweet_df = coin_tweet_df[
-        (coin_tweet_df["timestamp"] >= date_from_timestamp)
-        & (coin_tweet_df["timestamp"] <= date_to_timestamp)
-    ]
-
-    print(f"Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
-    coin_tweet_df = processing.filter_tweets(coin_tweet_df, text_filter)
-    print(f"END Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
-
     fig = go.Figure()
     fig.update_layout(
         template="plotly_dark",
@@ -182,6 +137,79 @@ def update_dashboard(
         template="plotly_dark",
         hovermode="x unified",
     )
+    return fig, full_hovertemplate, colors
+
+
+@callback(
+    Output("price-volume-graph", "figure"),
+    Output("tweet-impact-graph", "figure"),
+    Output("kpi-total-tweets", "children"),
+    Output("kpi-avg-price", "children"),
+    Output("kpi-avg-price-during-tweet", "children"),
+    Input("date-from-picker", "date"),
+    Input("date-to-picker", "date"),
+    Input("text-filter-input", "value"),
+)
+def update_dashboard(
+    date_from: str, date_to: str, text_filter: str
+) -> tuple[go.Figure, go.Figure, str, str, str]:
+    """
+    Updates the dashboard visualizations and KPIs based on user-selected
+    filters for dates and tweet content.
+
+    Args:
+        date_from (str): The start date string from the date picker (ISO format).
+        date_to (str): The end date string from the date picker (ISO format).
+        text_filter (str): Text query to filter tweets by their content.
+
+    Returns:
+        tuple: A 5-element tuple containing:
+            - fig (go.Figure): The price-volume Scatter plot with tweet markers.
+            - impact_fig (go.Figure): The relative time impact analysis figure.
+            - total_tweets_kpi (str): Formatted string of total filtered tweets.
+            - avg_price_kpi (str): Formatted string of the mean stock price.
+            - impact_kpi (str): Formatted string of avg price at tweet timestamps.
+    """
+
+    print(
+        f"Filters Applied - Date From: {date_from}, Date To: {date_to}, Text Filter: {text_filter}"
+    )
+
+    print(f"Raw Date Inputs - From: {date_from}, To: {date_to}")
+
+    if date_from is None or date_to is None:
+        print("Date input is None. Returning empty dashboard state.")
+
+        return (
+            go.Figure(),
+            go.Figure(),
+            "Please select both a start and end date.",
+            "N/A",
+            "N/A",
+            "N/A",
+        )
+    date_from_timestamp = processing.convert_date_to_timestamp(date_from)
+    date_to_timestamp = processing.convert_date_to_timestamp(date_to)
+
+    coin_stock_df = STOCK_DATA
+    coin_tweet_df = TWEET_DATA
+
+    coin_stock_df = coin_stock_df[
+        (coin_stock_df["timestamp"] >= date_from_timestamp)
+        & (coin_stock_df["timestamp"] <= date_to_timestamp)
+    ]
+    coin_tweet_df = coin_tweet_df[
+        (coin_tweet_df["timestamp"] >= date_from_timestamp)
+        & (coin_tweet_df["timestamp"] <= date_to_timestamp)
+    ]
+
+    print(f"Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
+    coin_tweet_df = processing.filter_tweets(coin_tweet_df, text_filter)
+    print(f"END Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
+
+    fig, full_hovertemplate, colors = _build_main_price_figure(
+        coin_stock_df, coin_tweet_df
+    )
 
     kpi_price = (
         f"{coin_stock_df['open'].mean():,.4f}" if not coin_stock_df.empty else "N/A"
@@ -194,6 +222,7 @@ def update_dashboard(
     avg_price_during_tweet = processing.calculate_avg_price_at_tweet_time(
         coin_tweet_df, coin_stock_df
     )
+
     print("Dashboard updated successfully.")
     return (
         fig,
@@ -202,6 +231,67 @@ def update_dashboard(
         kpi_price,
         f"{avg_price_during_tweet:.4f}",
     )
+
+
+def _add_average_trend(
+    impact_fig: go.Figure, all_normalized_series: list[pd.DataFrame]
+) -> None:
+    """
+    Calculates and plots the aggregate average price trend across all tweet events.
+
+    This helper function takes individual normalized price windows, computes the
+    mean price for each relative time step, and adds a high-visibility trend
+    line and peak annotation to the impact figure.
+
+    Args:
+        impact_fig (go.Figure): The Plotly figure object to which the average
+            trend trace will be added.
+        all_normalized_series (list[pd.DataFrame]): A list of DataFrames, where
+            each contains 'relative_hours' and 'normalized_price' for a single
+            tweet event.
+
+    Returns:
+        None: The function modifies the impact_fig object in-place.
+    """
+    if all_normalized_series:
+        agg_df = pd.concat(all_normalized_series)
+        agg_df["relative_hours"] = agg_df["relative_hours"].round(4)
+        mean_impact = (
+            agg_df.groupby("relative_hours")["normalized_price"].mean().reset_index()
+        )
+
+        agg_post_tweet = mean_impact[mean_impact["relative_hours"] > 0]
+        if not agg_post_tweet.empty:
+            agg_max_val = agg_post_tweet["normalized_price"].max()
+            agg_peak_x = agg_post_tweet.loc[
+                agg_post_tweet["normalized_price"].idxmax(), "relative_hours"
+            ]
+
+            impact_fig.add_trace(
+                go.Scatter(
+                    x=mean_impact["relative_hours"],
+                    y=mean_impact["normalized_price"],
+                    mode="lines",
+                    name="AVERAGE IMPACT",
+                    line={"color": "white", "width": 3},
+                    opacity=1.0,
+                    hovertemplate=(
+                        "<b>AVERAGE TREND</b><br>"
+                        + "Rel. Time: %{x:.2f}h<br>"
+                        + "Avg Change: %{y:.4f}x<br>"
+                        + "<extra></extra>"
+                    ),
+                )
+            )
+
+            impact_fig.add_vline(
+                x=agg_peak_x,
+                line_dash="dash",
+                line_width=3,
+                line_color="white",
+                annotation_text=f"AVG PEAK: {agg_max_val:.3f}x",
+                annotation_position="top right",
+            )
 
 
 def create_tweet_impact_figure(
@@ -256,8 +346,7 @@ def create_tweet_impact_figure(
         },
     )
 
-    max_vals = []
-    all_normalized_series = []
+    max_vals, all_normalized_series = [], []
 
     for i, (_, tweet) in enumerate(coin_tweet_df.iterrows()):
         color = colors[i % len(colors)]
@@ -313,45 +402,7 @@ def create_tweet_impact_figure(
                 )
             )
 
-    if all_normalized_series:
-        agg_df = pd.concat(all_normalized_series)
-        agg_df["relative_hours"] = agg_df["relative_hours"].round(4)
-        mean_impact = (
-            agg_df.groupby("relative_hours")["normalized_price"].mean().reset_index()
-        )
-
-        agg_post_tweet = mean_impact[mean_impact["relative_hours"] > 0]
-        if not agg_post_tweet.empty:
-            agg_max_val = agg_post_tweet["normalized_price"].max()
-            agg_peak_x = agg_post_tweet.loc[
-                agg_post_tweet["normalized_price"].idxmax(), "relative_hours"
-            ]
-
-            impact_fig.add_trace(
-                go.Scatter(
-                    x=mean_impact["relative_hours"],
-                    y=mean_impact["normalized_price"],
-                    mode="lines",
-                    name="AVERAGE IMPACT",
-                    line={"color": "white", "width": 3},
-                    opacity=1.0,
-                    hovertemplate=(
-                        "<b>AVERAGE TREND</b><br>"
-                        + "Rel. Time: %{x:.2f}h<br>"
-                        + "Avg Change: %{y:.4f}x<br>"
-                        + "<extra></extra>"
-                    ),
-                )
-            )
-
-            impact_fig.add_vline(
-                x=agg_peak_x,
-                line_dash="dash",
-                line_width=3,
-                line_color="white",
-                annotation_text=f"AVG PEAK: {agg_max_val:.3f}x",
-                annotation_position="top right",
-            )
+    _add_average_trend(impact_fig, all_normalized_series)
 
     return impact_fig, max_vals
 
