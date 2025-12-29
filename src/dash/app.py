@@ -8,6 +8,7 @@ from dash_bootstrap_components.themes import BOOTSTRAP
 
 from dash import Dash
 from src.dash import router
+from src.dash.pages.callbacks import callbacks
 
 external_stylesheets = [BOOTSTRAP]
 external_stylesheets = [BOOTSTRAP, dbc.themes.CYBORG, dbc.icons.FONT_AWESOME]
@@ -24,5 +25,3 @@ server = app.server
 
 
 app.layout = router.layout()
-
-from src.dash.pages.callbacks import callbacks

@@ -1,7 +1,15 @@
+"""
+Main Application Layout Module.
+
+This module defines the top-level structure of the Dash application, including
+the navigation bar and the main content container that hosts the multi-page
+content. It uses Dash Bootstrap Components for a responsive design and
+'dash.page_container' to manage page routing.
+"""
+
 import dash_bootstrap_components as dbc
 
 import dash
-from dash import dcc, html
 
 
 def layout():

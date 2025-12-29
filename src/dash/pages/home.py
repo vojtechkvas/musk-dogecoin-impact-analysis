@@ -1,14 +1,40 @@
+"""
+Dogecoin Tweets Visualization Page Module.
+
+This module defines the layout for the primary dashboard page, which visualizes
+the relationship between historical Dogecoin tweets and cryptocurrency price
+movements. It includes interactive filters for date ranges and keyword
+searches, Key Performance Indicators (KPIs), and detailed Plotly graphs
+for price/volume analysis and individual tweet impact.
+
+Components:
+    - Filters: Date pickers and text input for filtering data.
+    - KPIs: Metric cards for total tweets and average prices.
+    - Graphs: Time-series analysis of price/volume and relative price impact analysis.
+"""
+
 import dash_bootstrap_components as dbc
 
 import dash
-from dash import Input, Output, State, callback, dcc, html
+from dash import dcc, html
 from src.config.config import DEFAULT_DOGE_KEYWORDS, DOGE_MAX_DATE, DOGE_MIN_DATE
 
 dash.register_page(__name__, path="/")
 
 
-def create_card(title, value_id, icon_class):
+def create_card(title: str, value_id: str):
+    """
+    Creates a Bootstrap card component for displaying a metric.
 
+    Args:
+        title (str): The label/title to display at the top of the card.
+        value_id (str): The Dash component ID used to target the value
+            text in callbacks.
+
+    Returns:
+        dbc.Card: A Dash Bootstrap Components Card object containing the
+            styled title and value placeholder.
+    """
     return dbc.Card(
         dbc.CardBody(
             [
@@ -17,7 +43,6 @@ def create_card(title, value_id, icon_class):
                     id=value_id,
                     className="card-text display-4",
                 ),
-                #      html.I(className=icon_class + " fa-3x text-primary"),
             ],
             className="d-flex justify-content-between align-items-center",
         )
@@ -107,22 +132,17 @@ main_layout = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(
-                    create_card(
-                        "Total Tweets", "kpi-total-tweets", "fa-solid fa-hashtag"
-                    ),
+                    create_card("Total Tweets", "kpi-total-tweets"),
                     md=4,
                 ),
                 dbc.Col(
-                    create_card(
-                        "Avg. Crypto Price", "kpi-avg-price", "fa-solid fa-dollar-sign"
-                    ),
+                    create_card("Avg. Crypto Price", "kpi-avg-price"),
                     md=4,
                 ),
                 dbc.Col(
                     create_card(
                         "Avg. price during tweet",
                         "kpi-avg-price-during-tweet",
-                        "fa-solid fa-gauge",
                     ),
                     md=4,
                 ),

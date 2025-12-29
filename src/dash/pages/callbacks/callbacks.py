@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -12,7 +10,8 @@ from src.config.config import (
     POSTS_TEXT_COLUMN,
     RELATIVE_TIME_SPREAD_HOURS,
 )
-from src.dash.app import app
+
+# from src.dash.app import app
 from src.data_utils import loaders, processing
 
 STOCK_DATA = loaders.load_data(
@@ -307,7 +306,7 @@ def create_tweet_impact_figure(
     return impact_fig, max_vals
 
 
-@app.callback(
+@callback(
     Output("date-to-picker", "date"),
     [
         Input("mentionning-of-doge-department-button", "n_clicks"),
@@ -325,5 +324,5 @@ def update_date_picker(n_clicks, current_date):
 
     if n_clicks is not None and n_clicks > 0:
         return FIRST_MENTION_OF_DEPARTMENT_OF_GOVERNMENT_EFFICIENCY_DATE
-    else:
-        return current_date
+
+    return current_date
