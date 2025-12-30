@@ -18,7 +18,7 @@ from src.config.config import (
     POSTS_TEXT_COLUMN,
     RELATIVE_TIME_SPREAD_HOURS,
 )
-from src.data_utils import formatters, loaders, processing
+from src.data_utils import formatters, loaders, processing, utils
 
 STOCK_DATA = loaders.load_data(
     config.PROCESSED_DIR,
@@ -27,7 +27,7 @@ STOCK_DATA = loaders.load_data(
     skiprows=1,
 )
 
-STOCK_DATA = processing.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
+STOCK_DATA = utils.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
 
 TWEET_DATA = loaders.load_data(
     config.PROCESSED_DIR,
@@ -36,7 +36,7 @@ TWEET_DATA = loaders.load_data(
     skiprows=1,
 )
 
-TWEET_DATA = processing.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
+TWEET_DATA = utils.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
 
 
 print("Data Loaded: STOCK_DATA and TWEET_DATA")

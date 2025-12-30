@@ -1,3 +1,12 @@
+"""
+Data formatting and conversion utilities for date and numeric values.
+
+This module provides helper functions to standardize data for processing and
+presentation. It includes functionality for converting human-readable date
+strings into Unix timestamps and formatting large numbers with localized
+thousands separators.
+"""
+
 from datetime import datetime, timezone
 
 

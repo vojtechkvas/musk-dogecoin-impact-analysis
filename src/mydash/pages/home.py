@@ -82,7 +82,8 @@ main_layout = dbc.Container(
                                 color="primary",
                             ),
                             html.Small(
-                                "Automatically sets the end date to the first date mentioning the DOGE department.",
+                                "Automatically sets the end date to the first "
+                                "date mentioning the DOGE department.",
                                 className="text-muted",
                             ),
                         ],

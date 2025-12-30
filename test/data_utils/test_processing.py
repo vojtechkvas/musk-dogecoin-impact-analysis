@@ -1,13 +1,30 @@
+"""
+Unit tests for data processing and analysis logic.
+
+This module contains comprehensive test suites for validating the core analysis
+logic of the application. It covers Dogecoin-specific keyword filtering,
+general text search, and the temporal alignment between social media events
+and financial market data.
+"""
+
 import pandas as pd
 import pytest
 
-from src.data_utils.processing import *
+from src.data_utils import processing
 
 
 class TestDogecoinFiltering:
+    """
+    Test suite for specialized Dogecoin and department efficiency filters.
+
+    This class validates the regex-based search functionality across various
+    post types (original posts and quotes). It specifically tests the
+    application's ability to identify relevant financial social media content.
+    """
 
     @pytest.fixture
     def sample_tweets_df(self):
+        """Provides a mock DataFrame containing both original and quoted text."""
         return pd.DataFrame(
             {
                 "text": [
@@ -28,7 +45,10 @@ class TestDogecoinFiltering:
     def test_get_posts_related_to_dogecoin_defaults(
         self, sample_tweets_df, monkeypatch
     ):
-        """Exercises the 'if doge_keywords is None' branch."""
+        """
+        Verifies that the function uses global config defaults when no arguments
+        are passed. Uses monkeypatch to isolate the test from actual config values.
+        """
         monkeypatch.setattr(
             "src.data_utils.processing.DOGE_KEYWORDS", ["cats"]
         )
@@ -36,13 +56,14 @@ class TestDogecoinFiltering:
             "src.data_utils.processing.POSTS_TEXT_COLUMN", "text"
         )
 
-        result = get_posts_related_to_dogecoin(sample_tweets_df)
+        result = processing.get_posts_related_to_dogecoin(sample_tweets_df)
         assert len(result) == 1
         assert "cats" in result.iloc[0]["text"]
 
     def test_get_posts_related_to_dogecoin_success(self, sample_tweets_df):
+        """Tests multi-keyword matching within a single text column."""
         keywords = ["Dogecoin", "DOGE"]
-        result = get_posts_related_to_dogecoin(
+        result = processing.get_posts_related_to_dogecoin(
             sample_tweets_df, doge_keywords=keywords, text_column="text"
         )
 
@@ -51,8 +72,9 @@ class TestDogecoinFiltering:
         assert "DOGE" in result.iloc[1]["text"]
 
     def test_get_posts_related_to_dogecoin_no_match(self, sample_tweets_df):
+        """Ensures the function handles cases where no keywords are found gracefully."""
         keywords = ["XRP", "Ethereum"]
-        result = get_posts_related_to_dogecoin(
+        result = processing.get_posts_related_to_dogecoin(
             sample_tweets_df, doge_keywords=keywords, text_column="text"
         )
 
@@ -60,8 +82,9 @@ class TestDogecoinFiltering:
         assert isinstance(result, pd.DataFrame)
 
     def test_get_repost_related_to_dogecoin_quote(self, sample_tweets_df):
+        """Tests the logic for matching keywords across multiple text columns (quotes)."""
         keywords = ["Efficiency"]
-        result = get_repost_related_to_dogecoin_quote(
+        result = processing.get_repost_related_to_dogecoin_quote(
             sample_tweets_df,
             doge_keywords=keywords,
             text_columns=["text", "quoted_text"],
@@ -74,7 +97,8 @@ class TestDogecoinFiltering:
         self, sample_tweets_df, monkeypatch
     ):
         """
-        By NOT passing keywords or columns, we force the function to use the defaults from src.config.
+        By NOT passing keywords or columns,
+        we force the function to use the defaults from src.config.
         """
 
         monkeypatch.setattr(
@@ -84,181 +108,189 @@ class TestDogecoinFiltering:
             "src.data_utils.processing.QUOTE_TEXT", ["text", "quoted_text"]
         )
 
-        result = get_repost_related_to_dogecoin_quote(sample_tweets_df)
+        result = processing.get_repost_related_to_dogecoin_quote(
+            sample_tweets_df
+        )
 
         assert len(result) == 1
         assert "Government efficiency" in result.iloc[0]["text"]
 
 
-class TestDateTimeTransformationsDatetimeToUNIX:
+class TestKeywordFiltering:
+    """
+    General keyword filtering test suite.
 
-    def test_convert_datetime_to_unix_timestamp_success(self):
-        df = pd.DataFrame(
-            {"created_at": ["2023-01-01 00:00:00", "2023-01-01 00:01:00"]}
-        )
-        result = convert_datetime_to_unix_timestamp(
-            df, date_column="created_at", new_column_name="ts"
-        )
-
-        assert result["ts"].iloc[0] == 1672531200
-        assert result["ts"].dtype == "int64"
-
-    def test_convert_datetime_to_unix_timestamp_invalid_date(self):
-        df = pd.DataFrame({"created_at": ["not-a-date"]})
-        with pytest.raises(ValueError):
-            convert_datetime_to_unix_timestamp(df)
-
-
-class TestDateTimeTransformationsUNIXToDatetime:
-    def test_convert_unix_timestamp_to_datetime_success(self):
-        df = pd.DataFrame({"timestamp": [1672531200]})
-        result = convert_unix_timestamp_to_datetime(
-            df, timestamp_column="timestamp", new_column_name="dt"
-        )
-
-        assert result["dt"].iloc[0].year == 2023
-        assert result["dt"].iloc[0].month == 1
-        assert result["dt"].iloc[0].day == 1
-        assert result["dt"].iloc[0].tzinfo is not None
-
-
-class TestTweetFilteringByDate:
-
-    def test_drop_tweets_before_date(self):
-        # 2024-01-01 is 1704067200
-        # 2024-01-02 is 1704153600
-        df = pd.DataFrame(
-            {
-                "timestamp": [1704067200, 1704153600, 1704240000],
-                "text": ["New Year", "Jan 2nd", "Jan 3rd"],
-            }
-        )
-
-        cutoff = "2024-01-02"
-
-        result = drop_tweets_before_date(df, cutoff_date=cutoff)
-
-        assert len(result) == 1
-        assert result["timestamp"].iloc[0] == 1704067200
-
-    def test_drop_tweets_before_date_empty_result(self):
-        df = pd.DataFrame({"timestamp": [2000000000]})
-        cutoff = "2020-01-01"
-
-        result = drop_tweets_before_date(df, cutoff_date=cutoff)
-        assert len(result) == 0
-
-
-class TestDuplicateIdentification:
+    Validates basic string matching operations, including case-insensitivity,
+    handling of empty strings, and null-value (NaN) resilience.
+    """
 
     @pytest.fixture
-    def sample_duplicate_df(self):
-        """Provides a DataFrame with controlled duplicates."""
+    def sample_tweet_df(self):
+        """Provides a DataFrame with various text content for keyword testing."""
         return pd.DataFrame(
             {
-                "id": [1, 2, 2, 3, 4, 4],
-                "full_text": [
-                    "Unique post",
-                    "Duplicate post",
-                    "Duplicate post",
-                    "Another unique",
-                    "Same text, diff ID",
-                    "Same text, diff ID",
+                "text": [
+                    "Python is amazing!",
+                    "I love data science",
+                    "The weather is nice today",
+                    "Learning Pytorch and python",
+                    None,
                 ],
-                "metadata": ["a", "b", "c", "d", "e", "f"],
+                "other_column": ["a", "b", "c", "d", "e"],
             }
         )
 
-    def test_find_duplicates_with_subset(self, sample_duplicate_df):
-        """Tests that duplicates are correctly identified based on specific columns."""
-
-        subset = ["full_text"]
-        display = ["id", "full_text"]
-
-        count, _ = find_duplicates(sample_duplicate_df, subset, display)
-
-        assert count == 4
-
-    def test_find_duplicates_no_duplicates(self):
-        """Tests that it returns 0 when no duplicates exist."""
-        df = pd.DataFrame({"a": [1, 2, 3], "full_text": ["x", "y", "z"]})
-
-        count, _ = find_duplicates(
-            df, subset_columns=["a"], display_duplicates=["full_text"]
+    def test_filter_tweets_by_keyword_success(self, sample_tweet_df):
+        """Tests standard keyword matching."""
+        keyword = "data"
+        result = processing.filter_tweets_by_keyword(
+            sample_tweet_df, keyword, text_column="text"
         )
 
-        assert count == 0
+        assert len(result) == 1
+        assert "I love data science" in result["text"].values
 
-    def test_find_duplicates_missing_full_text_column(
-        self, sample_duplicate_df
-    ):
-        """Identifying duplicates without a 'full_text' column."""
-        df_no_text = sample_duplicate_df.drop(columns=["full_text"])
-
-        count, _ = find_duplicates(
-            df_no_text, subset_columns=["id"], display_duplicates=["id"]
+    def test_filter_tweets_by_keyword_case_insensitive(self, sample_tweet_df):
+        """Tests that the filter ignores case (Python vs python)."""
+        keyword = "PYTHON"
+        result = processing.filter_tweets_by_keyword(
+            sample_tweet_df, keyword, text_column="text"
         )
 
-        assert count == 4
+        assert len(result) == 2
+        for val in result["text"]:
+            assert "python" in val.lower()
 
-    def test_find_duplicates_no_duplicates_found(self):
+    def test_filter_tweets_by_keyword_handles_nan(self, sample_tweet_df):
+        """Tests that the function handles missing (NaN) values without crashing."""
+        keyword = "nice"
+
+        result = processing.filter_tweets_by_keyword(
+            sample_tweet_df, keyword, text_column="text"
+        )
+
+        assert len(result) == 1
+        assert result["text"].iloc[0] == "The weather is nice today"
+
+    def test_filter_tweets_by_keyword_empty_string(self, sample_tweet_df):
+        """Tests that an empty keyword returns the original DataFrame."""
+        result = processing.filter_tweets_by_keyword(
+            sample_tweet_df, "", text_column="text"
+        )
+
+        assert len(result) == len(sample_tweet_df)
+        pd.testing.assert_frame_equal(result, sample_tweet_df)
+
+    def test_filter_tweets_by_keyword_no_matches(self, sample_tweet_df):
+        """Tests that it returns an empty DataFrame when the keyword is not found."""
+        result = processing.filter_tweets_by_keyword(
+            sample_tweet_df, "Golang", text_column="text"
+        )
+
+        assert len(result) == 0
+        assert isinstance(result, pd.DataFrame)
+
+
+class TestAveragePriceAtTweetTime:
+    """
+    Test suite for financial and temporal data alignment.
+
+    Validates the 'minute-flooring' join logic used to associate social media
+    timestamps with corresponding stock market prices.
+    """
+
+    @pytest.fixture
+    def sample_stock_data(self):
         """
-        Exercises the 'False' branch of line 119.
-        When no duplicates exist, the code should skip the print block
-        and return 0.
+        Provides a stock DataFrame with prices at specific minute intervals.
+        1704067200 -> 2024-01-01 00:00:00
+        1704067260 -> 2024-01-01 00:01:00
         """
-        df = pd.DataFrame(
-            {"id": [1, 2, 3], "full_text": ["Post A", "Post B", "Post C"]}
+        return pd.DataFrame(
+            {
+                "timestamp": [1704067200, 1704067260, 1704067320],
+                "open": [100.0, 200.0, 300.0],
+            }
         )
 
-        count, _ = find_duplicates(
-            df, subset_columns=["id"], display_duplicates=["full_text"]
+    def test_calculate_avg_price_success(self, sample_stock_data):
+        """Tests that tweets are correctly floored to the minute and averaged."""
+        tweet_df = pd.DataFrame(
+            {
+                "timestamp": [
+                    1704067215,
+                    1704067245,
+                    1704067265,
+                ]
+            }
         )
 
-        assert count == 0
+        result = processing.calculate_avg_price_at_tweet_time(
+            tweet_df, sample_stock_data
+        )
+        assert result == pytest.approx(133.3333333)
 
-    def test_find_duplicates_completely_empty_case(self):
+    def test_calculate_avg_price_empty_inputs(self, sample_stock_data):
+        """Tests that empty DataFrames return 0.0."""
+        empty_df = pd.DataFrame(columns=["timestamp"])
+
+        assert (
+            processing.calculate_avg_price_at_tweet_time(
+                empty_df, sample_stock_data
+            )
+            == 0.0
+        )
+        assert (
+            processing.calculate_avg_price_at_tweet_time(
+                sample_stock_data, empty_df
+            )
+            == 0.0
+        )
+
+    def test_calculate_avg_price_no_matching_times(self, sample_stock_data):
+        """Tests that if no tweet minutes match stock minutes, it returns 0.0."""
+        tweet_df = pd.DataFrame({"timestamp": [915148800, 915148860]})
+
+        result = processing.calculate_avg_price_at_tweet_time(
+            tweet_df, sample_stock_data
+        )
+        assert result == 0.0
+
+    def test_calculate_avg_price_duplicate_stock_minutes(self):
         """
-        Exercises the 'False' branch of 'if not duplicates.empty'.
-        This covers the jump from line 119 directly to the return statement.
+        Tests that the function handles duplicate stock minutes by dropping
+        them (as per the code logic) instead of creating a Cartesian product.
         """
-        df = pd.DataFrame()
-
-        count, _ = find_duplicates(
-            df, subset_columns=["id"], display_duplicates=["id"]
+        stock_df = pd.DataFrame(
+            {
+                "timestamp": [
+                    1704067200,
+                    1704067210,
+                ],
+                "open": [
+                    100.0,
+                    999.0,
+                ],
+            }
         )
+        tweet_df = pd.DataFrame({"timestamp": [1704067205]})
 
-        assert count == 0
-
-    def test_find_duplicates_no_full_text_column(self):
-        """Exercises the else branch in find_duplicates."""
-        df = pd.DataFrame({"id": [1, 1, 2], "data": ["a", "a", "b"]})
-
-        count, _ = find_duplicates(
-            df, subset_columns=["id"], display_duplicates=["id"]
+        result = processing.calculate_avg_price_at_tweet_time(
+            tweet_df, stock_df
         )
-        assert count == 2
+        assert result == 100.0
 
-    def test_find_duplicates_sorting_logic(self, sample_duplicate_df):
-        """Tests that the function prints and respects the 'full_text' sorting if present."""
-        subset = ["full_text"]
-        display = ["full_text"]
-
-        count, duplicate_df = find_duplicates(
-            sample_duplicate_df, subset, display
+    def test_calculate_avg_price_partial_matches(self, sample_stock_data):
+        """Tests averaging when only some tweets have corresponding stock data."""
+        tweet_df = pd.DataFrame(
+            {
+                "timestamp": [
+                    1704067200,  # Matches 100.0
+                    2000000000,  # Matches nothing (NaN)
+                ]
+            }
         )
-
-        assert "Duplicate post" == duplicate_df.iloc[0]["full_text"]
-        assert "Duplicate post" == duplicate_df.iloc[1]["full_text"]
-        assert "Same text, diff ID" == duplicate_df.iloc[2]["full_text"]
-        assert "Same text, diff ID" == duplicate_df.iloc[3]["full_text"]
-
-        assert count == 4
-
-    def test_find_duplicates_empty_df(self):
-        """Tests behavior with an empty DataFrame."""
-        df = pd.DataFrame(columns=["id", "full_text"])
-
-        count, _ = find_duplicates(df, ["id"], ["full_text"])
-
-        assert count == 0
+        result = processing.calculate_avg_price_at_tweet_time(
+            tweet_df, sample_stock_data
+        )
+        assert result == 100.0

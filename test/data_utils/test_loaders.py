@@ -1,3 +1,13 @@
+"""
+Unit tests for data persistence utilities.
+
+This module validates the functionality of data loading and saving operations.
+It ensures that CSV files are correctly read into DataFrames with proper
+type casting and structural handling (skiprows, separators), and that
+DataFrames are persisted correctly while automatically managing nested
+directory structures.
+"""
+
 import os
 
 import pandas as pd
@@ -7,6 +17,13 @@ from src.data_utils.loaders import load_data, save_data
 
 
 class TestLoadData:
+    """
+    Test suite for the load_data utility.
+
+    This class validates the robust loading of CSV files into pandas DataFrames.
+    It covers successful parsing, custom delimiters, schema enforcement via
+    dtype mapping, and error handling for non-existent file paths.
+    """
 
     @pytest.fixture
     def mock_csv(self, tmp_path, request):
@@ -15,7 +32,9 @@ class TestLoadData:
         Expects a tuple of (filename, content) from the test marker.
         """
 
-        params = getattr(request, "param", ("test.csv", "col1,col2\nval1,10\nval2,20"))
+        params = getattr(
+            request, "param", ("test.csv", "col1,col2\nval1,10\nval2,20")
+        )
         filename, content = params
 
         d = tmp_path / "data"
@@ -26,7 +45,9 @@ class TestLoadData:
         return [str(d)], filename
 
     @pytest.mark.parametrize(
-        "mock_csv", [("standard.csv", "col1,col2\nval1,10\nval2,20")], indirect=True
+        "mock_csv",
+        [("standard.csv", "col1,col2\nval1,10\nval2,20")],
+        indirect=True,
     )
     def test_load_data_success(self, mock_csv):
         """
@@ -42,7 +63,9 @@ class TestLoadData:
         assert len(df) == 2
         assert list(df.columns) == ["col1", "col2"]
 
-    @pytest.mark.parametrize("mock_csv", [("typed.csv", "1;10.5")], indirect=True)
+    @pytest.mark.parametrize(
+        "mock_csv", [("typed.csv", "1;10.5")], indirect=True
+    )
     def test_load_data_with_types(self, mock_csv):
         """
         Boundary test: Verifies data type enforcement during the loading process.
@@ -93,6 +116,14 @@ class TestLoadData:
 
 
 class TestSaveData:
+    """
+    Test suite for the save_data utility.
+
+    This class verifies the persistence of DataFrames to the file system.
+    Key focus areas include the recursive creation of nested directory
+    structures, file overwrite behavior, and ensuring CSV output formatting
+    (such as the exclusion of row indexes).
+    """
 
     @pytest.fixture
     def sample_df(self):
@@ -151,7 +182,9 @@ class TestSaveData:
 
         save_data(directory_list, filename, sample_df)
 
-        with open(os.path.join(str(tmp_path), filename), "r") as f:
+        with open(
+            os.path.join(str(tmp_path), filename), "r", encoding="utf-8"
+        ) as f:
             header = f.readline().strip()
 
         assert header == "name,score"

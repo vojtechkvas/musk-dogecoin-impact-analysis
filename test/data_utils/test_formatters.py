@@ -1,7 +1,14 @@
-import pandas as pd
+"""
+Unit tests for data formatting utilities.
+
+This module contains test suites for verifying the correctness of number formatting
+(e.g., thousands separators) and date-to-Unix-timestamp conversions. It utilizes
+pytest's parametrization to cover a wide range of valid and invalid input scenarios.
+"""
+
 import pytest
 
-from src.data_utils.formatters import *
+from src.data_utils import formatters
 
 
 class TestNumberFormatting:
@@ -22,7 +29,12 @@ class TestNumberFormatting:
     )
     def test_format_number_multi_thousands(self, input_val, expected_output):
         """Property-based check for different thousands thresholds."""
-        assert format_number(input_val) == expected_output
+        assert formatters.format_number(input_val) == expected_output
+
+    def test_format_number_with_none_input(self):
+        """Verifies behavior when input is None (if applicable)."""
+        with pytest.raises(TypeError):
+            formatters.format_number(None)
 
 
 class TestDateToTimestamp:
@@ -43,7 +55,7 @@ class TestDateToTimestamp:
     ):
         """Verify correct Unix timestamps for various valid date strings and formats."""
         assert (
-            convert_date_to_timestamp(date_string, date_format)
+            formatters.convert_date_to_timestamp(date_string, date_format)
             == expected_timestamp
         )
 
@@ -61,4 +73,4 @@ class TestDateToTimestamp:
         with pytest.raises(
             ValueError, match=f"Invalid date format: {invalid_date}"
         ):
-            convert_date_to_timestamp(invalid_date, date_format)
+            formatters.convert_date_to_timestamp(invalid_date, date_format)

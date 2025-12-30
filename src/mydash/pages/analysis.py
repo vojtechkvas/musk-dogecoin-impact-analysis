@@ -18,7 +18,7 @@ layout = dbc.Container(
         [
             dbc.Col(
                 html.H1(
-                    "Dogecoin Tweets Visualization",
+                    "Crypto Tweets Visualization",
                     className="text-center my-4 text-primary",
                 ),
                 width=12,
