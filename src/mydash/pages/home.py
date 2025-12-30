@@ -17,7 +17,11 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 
-from src.config.config import DEFAULT_DOGE_KEYWORDS, DOGE_MAX_DATE, DOGE_MIN_DATE
+from src.config.config import (
+    DEFAULT_DOGE_KEYWORDS,
+    DOGE_MAX_DATE,
+    DOGE_MIN_DATE,
+)
 
 dash.register_page(__name__, path="/")
 
@@ -65,62 +69,108 @@ main_layout = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(
-                    html.Div(
-                        dbc.Button(
-                            "Set First mention of DOGE department",
-                            id="mentionning-of-doge-department-button",
-                            n_clicks=0,
-                            color="primary",
-                            # className="mt-2",
-                        ),
-                        #    className="mt-2",
+                    dbc.Stack(
+                        [
+                            dbc.Label(
+                                "Quick date selection",
+                                className="fw-semibold",
+                            ),
+                            dbc.Button(
+                                "Set end date to first DOGE mention",
+                                id="mentionning-of-doge-department-button",
+                                n_clicks=0,
+                                color="primary",
+                            ),
+                            html.Small(
+                                "Automatically sets the end date to the first date mentioning the DOGE department.",
+                                className="text-muted",
+                            ),
+                        ],
+                        gap=1,
                     ),
                     md=4,
+                    sm=12,
                     xs=12,
                 ),
                 dbc.Col(
-                    dcc.DatePickerSingle(
-                        id="date-from-picker",
-                        min_date_allowed=DOGE_MIN_DATE,
-                        max_date_allowed=DOGE_MAX_DATE,
-                        initial_visible_month=DOGE_MIN_DATE,
-                        date=DOGE_MIN_DATE,
-                        placeholder="Date From",
-                        calendar_orientation="vertical",
+                    dbc.Stack(
+                        [
+                            dbc.Label(
+                                "Date from",
+                                html_for="date-from-picker",
+                                className="fw-semibold",
+                            ),
+                            dcc.DatePickerSingle(
+                                id="date-from-picker",
+                                min_date_allowed=DOGE_MIN_DATE,
+                                max_date_allowed=DOGE_MAX_DATE,
+                                initial_visible_month=DOGE_MIN_DATE,
+                                date=DOGE_MIN_DATE,
+                                placeholder="Select start date",
+                                calendar_orientation="vertical",
+                            ),
+                            html.Small(
+                                "Start date for DOGE data filtering",
+                                className="text-muted",
+                            ),
+                        ]
                     ),
                     md=2,
-                    xs=6,
+                    sm=6,
+                    xs=12,
                 ),
                 dbc.Col(
-                    dcc.DatePickerSingle(
-                        id="date-to-picker",
-                        min_date_allowed=DOGE_MIN_DATE,
-                        max_date_allowed=DOGE_MAX_DATE,
-                        initial_visible_month=DOGE_MAX_DATE,
-                        date=DOGE_MAX_DATE,
-                        placeholder="Date To",
-                        calendar_orientation="vertical",
-                        className="dbc-dark-theme text-white bg-dark border-secondary",
-                        style={
-                            "color": "white",
-                            "backgroundColor": "#343a40",
-                            "border": "1px solid #6c757d",
-                        },
+                    dbc.Stack(
+                        [
+                            dbc.Label(
+                                "Date to",
+                                html_for="date-to-picker",
+                                className="fw-semibold",
+                            ),
+                            dcc.DatePickerSingle(
+                                id="date-to-picker",
+                                min_date_allowed=DOGE_MIN_DATE,
+                                max_date_allowed=DOGE_MAX_DATE,
+                                initial_visible_month=DOGE_MAX_DATE,
+                                date=DOGE_MAX_DATE,
+                                placeholder="Date To",
+                                calendar_orientation="vertical",
+                            ),
+                            html.Small(
+                                "End date for DOGE data filtering",
+                                className="text-muted",
+                            ),
+                        ]
                     ),
                     md=2,
-                    xs=6,
+                    sm=6,
+                    xs=12,
                 ),
                 dbc.Col(
-                    dbc.Input(
-                        id="text-filter-input",
-                        placeholder="Filter tweets by text (e.g., 'Elon')",
-                        type="text",
-                        debounce=True,
-                        value=DEFAULT_DOGE_KEYWORDS,
-                        className="text-white bg-dark border-secondary",
+                    dbc.Stack(
+                        [
+                            dbc.Label(
+                                "Text filter",
+                                html_for="text-filter-input",
+                                className="fw-semibold",
+                            ),
+                            dbc.Input(
+                                id="text-filter-input",
+                                placeholder="Filter tweets by text (e.g., 'Elon')",
+                                type="text",
+                                debounce=True,
+                                value=DEFAULT_DOGE_KEYWORDS,
+                                className="text-white bg-dark border-secondary",
+                            ),
+                            html.Small(
+                                "Shows only tweets containing the specified keyword or phrase.",
+                                className="text-muted",
+                            ),
+                        ],
+                        gap=1,
                     ),
                     md=4,
-                    xs=12,
+                    sm=12,
                 ),
             ],
             className="g-4 mb-4",
@@ -151,7 +201,9 @@ main_layout = dbc.Container(
                 dbc.Col(
                     dbc.Card(
                         [
-                            dbc.CardHeader(html.H4("Price and Tweet Volume Over Time")),
+                            dbc.CardHeader(
+                                html.H4("Price and Tweet Volume Over Time")
+                            ),
                             dbc.CardBody(
                                 dcc.Graph(
                                     id="price-volume-graph",

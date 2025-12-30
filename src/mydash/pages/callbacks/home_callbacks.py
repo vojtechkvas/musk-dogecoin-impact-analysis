@@ -105,14 +105,17 @@ def _build_main_price_figure(
             )
         )
 
-    coin_tweet_df["timestamp"] = pd.to_datetime(coin_tweet_df["timestamp"], unit="s")
+    coin_tweet_df["timestamp"] = pd.to_datetime(
+        coin_tweet_df["timestamp"], unit="s"
+    )
 
     coin_tweet_df["date_display"] = coin_tweet_df["timestamp"].dt.strftime(
         "%Y-%m-%d %H:%M:%S"
     )
 
     template_lines = [
-        f"<b>{col}:</b> %{{customdata[{i}]}}" for i, col in enumerate(HOVER_COLUMNS)
+        f"<b>{col}:</b> %{{customdata[{i}]}}"
+        for i, col in enumerate(HOVER_COLUMNS)
     ]
     full_hovertemplate = "<br>".join(template_lines) + "<extra></extra>"
 
@@ -212,7 +215,9 @@ def update_dashboard(
     )
 
     kpi_price = (
-        f"{coin_stock_df['open'].mean():,.4f}" if not coin_stock_df.empty else "N/A"
+        f"{coin_stock_df['open'].mean():,.4f}"
+        if not coin_stock_df.empty
+        else "N/A"
     )
 
     impact_fig, _ = create_tweet_impact_figure(
@@ -257,7 +262,9 @@ def _add_average_trend(
         agg_df = pd.concat(all_normalized_series)
         agg_df["relative_hours"] = agg_df["relative_hours"].round(4)
         mean_impact = (
-            agg_df.groupby("relative_hours")["normalized_price"].mean().reset_index()
+            agg_df.groupby("relative_hours")["normalized_price"]
+            .mean()
+            .reset_index()
         )
 
         agg_post_tweet = mean_impact[mean_impact["relative_hours"] > 0]
@@ -375,7 +382,7 @@ def _process_single_tweet(
             x=window_df["relative_hours"],
             y=window_df["normalized_price"],
             mode="lines",
-            name=f"Tweet: {tweet['full_text'][:30]}...",
+            name=f"{tweet['full_text']}",
             line={"color": color, "width": 1.5},
             opacity=0.4,
             customdata=customdata,
