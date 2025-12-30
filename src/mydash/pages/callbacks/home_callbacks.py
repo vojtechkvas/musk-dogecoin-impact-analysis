@@ -18,7 +18,7 @@ from src.config.config import (
     POSTS_TEXT_COLUMN,
     RELATIVE_TIME_SPREAD_HOURS,
 )
-from src.data_utils import loaders, processing
+from src.data_utils import formatters, loaders, processing
 
 STOCK_DATA = loaders.load_data(
     config.PROCESSED_DIR,
@@ -191,8 +191,8 @@ def update_dashboard(
             "N/A",
             "N/A",
         )
-    date_from_timestamp = processing.convert_date_to_timestamp(date_from)
-    date_to_timestamp = processing.convert_date_to_timestamp(date_to)
+    date_from_timestamp = formatters.convert_date_to_timestamp(date_from)
+    date_to_timestamp = formatters.convert_date_to_timestamp(date_to)
 
     coin_stock_df = STOCK_DATA
     coin_tweet_df = TWEET_DATA
@@ -207,7 +207,9 @@ def update_dashboard(
     ]
 
     print(f"Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
-    coin_tweet_df = processing.filter_tweets(coin_tweet_df, text_filter)
+    coin_tweet_df = processing.filter_tweets_by_keyword(
+        coin_tweet_df, text_filter
+    )
     print(f"END Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
 
     fig, full_hovertemplate, colors = _build_main_price_figure(

@@ -41,8 +41,12 @@ def calculate_avg_price_at_tweet_time(
     if tweet_df.empty or stock_df.empty:
         return 0.0
 
-    tweet_minutes = pd.to_datetime(tweet_df["timestamp"], unit="s").dt.floor("min")
-    stock_minutes = pd.to_datetime(stock_df["timestamp"], unit="s").dt.floor("min")
+    tweet_minutes = pd.to_datetime(tweet_df["timestamp"], unit="s").dt.floor(
+        "min"
+    )
+    stock_minutes = pd.to_datetime(stock_df["timestamp"], unit="s").dt.floor(
+        "min"
+    )
 
     price_lookup = pd.DataFrame(
         {"align_dt": stock_minutes, "price": stock_df["open"]}
@@ -63,29 +67,7 @@ def calculate_avg_price_at_tweet_time(
     return float(avg_val)
 
 
-def convert_date_to_timestamp(date_string: str, date_format: str = "%Y-%m-%d") -> int:
-    """
-    Converts a date string in YYYY-MM-DD format to a Unix timestamp.
-
-    Args:
-        date_string (str): The date string to convert.
-        date_format (str): The expected format of the date string.
-                           Defaults to "%Y-%m-%d".
-    Returns:
-        int: The corresponding Unix timestamp.
-    """
-
-    try:
-        datetime_object = datetime.strptime(date_string, date_format)
-
-        return int(datetime_object.timestamp())
-    except ValueError as e:
-        raise ValueError(
-            f"Invalid date format: {date_string}. Expected {date_format}"
-        ) from e
-
-
-def filter_tweets(
+def filter_tweets_by_keyword(
     df: pd.DataFrame, keyword: str, text_column: str = POSTS_TEXT_COLUMN
 ) -> DataFrame:
     """
@@ -166,8 +148,12 @@ def get_repost_related_to_dogecoin_quote(
 
     regex_pattern = "|".join(doge_keywords)
 
-    mask_orig = df[text_columns[0]].str.contains(regex_pattern, case=False, na=False)
-    mask_quote = df[text_columns[1]].str.contains(regex_pattern, case=False, na=False)
+    mask_orig = df[text_columns[0]].str.contains(
+        regex_pattern, case=False, na=False
+    )
+    mask_quote = df[text_columns[1]].str.contains(
+        regex_pattern, case=False, na=False
+    )
 
     final_mask = mask_orig | mask_quote
 
@@ -244,7 +230,7 @@ def drop_tweets_before_date(
     Returns:
         A filtered copy of the DataFrame containing only tweets posted before the cutoff.
     """
-    cutoff_timestamp = datetime.datetime.strptime(cutoff_date, "%Y-%m-%d").timestamp()
+    cutoff_timestamp = datetime.strptime(cutoff_date, "%Y-%m-%d").timestamp()
     mask = df[timestamp_column] < cutoff_timestamp
 
     # print(f"Dropping {len(mask)} {mask.sum()} tweets before {cutoff_date}.")
@@ -278,20 +264,3 @@ def find_duplicates(
             output = output.sort_values(by="full_text")
 
     return len(duplicates), output
-
-
-def print_number(number: int | float) -> str:
-    """
-    Formats a number as a string with space separators for thousands.
-
-    This function uses an underscore as a temporary separator during formatting
-    and replaces it with a space to create a human-readable numeric string.
-
-    Args:
-        number: The numeric value (int or float) to be formatted.
-
-    Returns:
-        A string representation of the number with spaces as thousands separators.
-        Example: 1000000 becomes "1 000 000".
-    """
-    return f"{number:_}".replace("_", " ")

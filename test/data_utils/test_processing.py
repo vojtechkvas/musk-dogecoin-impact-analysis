@@ -29,8 +29,12 @@ class TestDogecoinFiltering:
         self, sample_tweets_df, monkeypatch
     ):
         """Exercises the 'if doge_keywords is None' branch."""
-        monkeypatch.setattr("src.data_utils.processing.DOGE_KEYWORDS", ["cats"])
-        monkeypatch.setattr("src.data_utils.processing.POSTS_TEXT_COLUMN", "text")
+        monkeypatch.setattr(
+            "src.data_utils.processing.DOGE_KEYWORDS", ["cats"]
+        )
+        monkeypatch.setattr(
+            "src.data_utils.processing.POSTS_TEXT_COLUMN", "text"
+        )
 
         result = get_posts_related_to_dogecoin(sample_tweets_df)
         assert len(result) == 1
@@ -73,7 +77,9 @@ class TestDogecoinFiltering:
         By NOT passing keywords or columns, we force the function to use the defaults from src.config.
         """
 
-        monkeypatch.setattr("src.data_utils.processing.DOGE_KEYWORDS", ["Efficiency"])
+        monkeypatch.setattr(
+            "src.data_utils.processing.DOGE_KEYWORDS", ["Efficiency"]
+        )
         monkeypatch.setattr(
             "src.data_utils.processing.QUOTE_TEXT", ["text", "quoted_text"]
         )
@@ -177,13 +183,15 @@ class TestDuplicateIdentification:
         """Tests that it returns 0 when no duplicates exist."""
         df = pd.DataFrame({"a": [1, 2, 3], "full_text": ["x", "y", "z"]})
 
-        count, duplicate_df = find_duplicates(
+        count, _ = find_duplicates(
             df, subset_columns=["a"], display_duplicates=["full_text"]
         )
 
         assert count == 0
 
-    def test_find_duplicates_missing_full_text_column(self, sample_duplicate_df):
+    def test_find_duplicates_missing_full_text_column(
+        self, sample_duplicate_df
+    ):
         """Identifying duplicates without a 'full_text' column."""
         df_no_text = sample_duplicate_df.drop(columns=["full_text"])
 
@@ -216,7 +224,9 @@ class TestDuplicateIdentification:
         """
         df = pd.DataFrame()
 
-        count, _ = find_duplicates(df, subset_columns=["id"], display_duplicates=["id"])
+        count, _ = find_duplicates(
+            df, subset_columns=["id"], display_duplicates=["id"]
+        )
 
         assert count == 0
 
@@ -224,7 +234,9 @@ class TestDuplicateIdentification:
         """Exercises the else branch in find_duplicates."""
         df = pd.DataFrame({"id": [1, 1, 2], "data": ["a", "a", "b"]})
 
-        count, _ = find_duplicates(df, subset_columns=["id"], display_duplicates=["id"])
+        count, _ = find_duplicates(
+            df, subset_columns=["id"], display_duplicates=["id"]
+        )
         assert count == 2
 
     def test_find_duplicates_sorting_logic(self, sample_duplicate_df):
@@ -232,7 +244,9 @@ class TestDuplicateIdentification:
         subset = ["full_text"]
         display = ["full_text"]
 
-        count, duplicate_df = find_duplicates(sample_duplicate_df, subset, display)
+        count, duplicate_df = find_duplicates(
+            sample_duplicate_df, subset, display
+        )
 
         assert "Duplicate post" == duplicate_df.iloc[0]["full_text"]
         assert "Duplicate post" == duplicate_df.iloc[1]["full_text"]
@@ -248,24 +262,3 @@ class TestDuplicateIdentification:
         count, _ = find_duplicates(df, ["id"], ["full_text"])
 
         assert count == 0
-
-
-class TestNumberFormatting:
-    """Tests for the print_number utility function."""
-
-    @pytest.mark.parametrize(
-        "input_val, expected_output",
-        [
-            (-50000, "-50 000"),
-            (0, "0"),
-            (4, "4"),
-            (123, "123"),
-            (1000, "1 000"),
-            (10000, "10 000"),
-            (100000, "100 000"),
-            (1234.56, "1 234.56"),
-        ],
-    )
-    def test_print_number_multi_thousands(self, input_val, expected_output):
-        """Property-based check for different thousands thresholds."""
-        assert print_number(input_val) == expected_output
