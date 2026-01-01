@@ -68,13 +68,18 @@ def _build_main_price_figure(
     fig.update_layout(
         template="plotly_dark",
         height=600,
+        font={"size": 18},
+        xaxis_title={"text": "Ti", "font": {"size": 20}},
+        yaxis_title={"text": "USDT", "font": {"size": 20}},
         legend={
+            "font": {"size": 16},
             "orientation": "h",
             "yanchor": "top",
             "y": -0.2,
             "xanchor": "center",
             "x": 0.5,
         },
+        hoverlabel={"font_size": 18},
     )
     fig.add_trace(
         go.Scatter(
@@ -429,13 +434,18 @@ def create_tweet_impact_figure(
     """
     impact_fig = go.Figure()
     impact_fig.update_layout(
-        title="Price Impact: 6 hours Before vs 6 hours after Tweets",
+        title={
+            "text": "Price Impact: 6 hours Before vs 6 hours after Tweets",
+            "font": {"size": 24},
+        },
         template="plotly_dark",
-        xaxis_title="Hours relative to Tweet",
-        yaxis_title="Normalized Price (Relative to Tweet)",
+        xaxis_title={"text": "Hours relative to Tweet", "font": {"size": 20}},
+        yaxis_title={"text": "Normalized Price", "font": {"size": 20}},
         hovermode="closest",
         height=900,
+        font={"size": 18},
         legend={
+            "font": {"size": 16},
             "orientation": "v",
             "yanchor": "top",
             "y": -0.2,
