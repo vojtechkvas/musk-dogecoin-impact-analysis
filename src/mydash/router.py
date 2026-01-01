@@ -38,8 +38,8 @@ def layout() -> dbc.Container:
                     ),
                     dbc.NavItem(
                         dbc.NavLink(
-                            "Deep Analysis",
-                            href="/analysis",
+                            "Causal Impact",
+                            href="/causalimpact",
                             active="exact",
                             className="fs-5 mx-2",
                         )
