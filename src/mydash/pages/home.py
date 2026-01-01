@@ -73,18 +73,18 @@ main_layout = dbc.Container(
                         [
                             dbc.Label(
                                 "Quick date selection",
-                                className="fw-semibold",
+                                className="fw-semibold fs-4",
                             ),
                             dbc.Button(
                                 "Set end date to first DOGE mention",
                                 id="mentionning-of-doge-department-button",
                                 n_clicks=0,
-                                color="primary",
+                                color="primary fs-5",
                             ),
                             html.Small(
                                 "Automatically sets the end date to the first "
                                 "date mentioning the DOGE department.",
-                                className="text-muted",
+                                className="text-muted fs-5",
                             ),
                         ],
                         gap=1,
@@ -99,7 +99,7 @@ main_layout = dbc.Container(
                             dbc.Label(
                                 "Date from",
                                 html_for="date-from-picker",
-                                className="fw-semibold",
+                                className="fw-semibold fs-4",
                             ),
                             dcc.DatePickerSingle(
                                 id="date-from-picker",
@@ -109,10 +109,11 @@ main_layout = dbc.Container(
                                 date=DOGE_MIN_DATE,
                                 placeholder="Select start date",
                                 calendar_orientation="vertical",
+                                className="fs-5",
                             ),
                             html.Small(
                                 "Start date for DOGE data filtering",
-                                className="text-muted",
+                                className="text-muted fs-5",
                             ),
                         ]
                     ),
@@ -126,7 +127,7 @@ main_layout = dbc.Container(
                             dbc.Label(
                                 "Date to",
                                 html_for="date-to-picker",
-                                className="fw-semibold",
+                                className="fw-semibold fs-4",
                             ),
                             dcc.DatePickerSingle(
                                 id="date-to-picker",
@@ -136,10 +137,11 @@ main_layout = dbc.Container(
                                 date=DOGE_MAX_DATE,
                                 placeholder="Date To",
                                 calendar_orientation="vertical",
+                                className="fs-5",
                             ),
                             html.Small(
                                 "End date for DOGE data filtering",
-                                className="text-muted",
+                                className="text-muted fs-5",
                             ),
                         ]
                     ),
@@ -153,19 +155,19 @@ main_layout = dbc.Container(
                             dbc.Label(
                                 "Text filter",
                                 html_for="text-filter-input",
-                                className="fw-semibold",
+                                className="fw-semibold fs-4",
                             ),
                             dbc.Input(
                                 id="text-filter-input",
-                                placeholder="Filter tweets by text (e.g., 'Elon')",
+                                placeholder="Filter tweets by text (e.g., 'dogecoin')",
                                 type="text",
                                 debounce=True,
                                 value=DEFAULT_DOGE_KEYWORDS,
-                                className="text-white bg-dark border-secondary",
+                                className="bg-black text-white fw-bold fs-5 border-white border-2",
                             ),
                             html.Small(
                                 "Shows only tweets containing the specified keyword or phrase.",
-                                className="text-muted",
+                                className="text-muted fs-5",
                             ),
                         ],
                         gap=1,
