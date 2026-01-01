@@ -31,6 +31,7 @@ icon_map = {
     "retweet": "🔁 Retweet",
     "timestamp": "🕒 Timestamp",
 }
+icon_map = {}
 
 
 from src.data_utils import formatters, loaders, processing, utils
@@ -232,8 +233,8 @@ layout = dbc.Container(
 
 @callback(
     Output("selection-output", "children"),
-    Input("num-from-input-causalimpact", "num_from"),
-    Input("num-to-input-causalimpact", "num_to"),
+    Input("num-from-input-causalimpact", "value"),
+    Input("num-to-input-causalimpact", "value"),
     Input("tweet-selector-table", "active_cell"),
     State("tweet-selector-table", "data"),
 )
@@ -246,32 +247,54 @@ def display_row_details(num_from, num_to, active_cell, table_data):
     print(active_cell)
 
     row_index = active_cell["row"]
-
     selected_row = table_data[row_index]
 
-    tweet_text = selected_row.get("quote", "No text available")
-    timestamp = selected_row.get("timestamp", "N/A")
-
-    card = dbc.Card(
-        dbc.CardBody(
+    details_content = [
+        html.Div(
             [
-                html.H5(
-                    "📊 Selected Tweet Details",
-                    className="card-title text-info",
+                html.H3(
+                    "Tweet",
+                    className="text-center my-4 text-primary",
                 ),
-                html.P(
-                    f"Row Index: {row_index}", className="text-muted small"
+                html.Small(
+                    f"Viewing Row Index: {row_index}", className="text-white"
                 ),
-                html.Hr(),
-                html.P(tweet_text, className="fs-5"),
-                dbc.Badge(
-                    f"Unix TS: {timestamp}",
-                    color="secondary",
-                    className="me-2",
-                ),
-            ]
+            ],
+            className="mb-3",
         ),
-        className="mt-3 bg-dark border-secondary text-white",
-    )
+        html.Hr(className="text-secondary"),
+    ]
 
-    return card
+    for col_name, value in selected_row.items():
+        display_name = icon_map.get(col_name, col_name)
+
+        display_value = str(value)
+
+        details_content.append(
+            dbc.Row(
+                [
+                    dbc.Col(
+                        html.B(f"{display_name}"),
+                        width=4,
+                        className="text-primary font-monospace",
+                    ),
+                    dbc.Col(
+                        html.Span(display_value),
+                        width=8,
+                        className="text-white",
+                    ),
+                ],
+                className="mb-2 py-1 border-bottom border-secondary border-opacity-25",
+            )
+        )
+
+    return dbc.Card(
+        dbc.CardBody(details_content),
+        className="mt-3 shadow-lg",
+        style={
+            "backgroundColor": "#1a1a1a",
+            "border": "1px solid #333",
+            "borderRadius": "10px",
+            "color": "white",
+        },
+    )
