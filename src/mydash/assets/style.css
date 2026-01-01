@@ -17,3 +17,7 @@ p{
     font-size: 20px;
 }
 
+
+.dash-filter input {
+    color: #FFF !important;
+}

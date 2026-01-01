@@ -9,7 +9,7 @@ related to Dogecoin and social media impact.
 
 import dash
 import dash_bootstrap_components as dbc
-from dash import dcc, html
+from dash import Input, Output, State, callback, dash_table, dcc, html
 
 import src.config.config as config
 from src.config.config import (
@@ -23,9 +23,7 @@ dash.register_page(__name__, path="/causalimpact")
 
 import dash_bootstrap_components as dbc
 import pandas as pd
-from dash import Input, Output, callback, dash_table, html
 
-# 1. Map your columns to icons/labels for the UI
 icon_map = {
     "possibly_sensitive": "⚠️ Sensitive",
     "quote_id": "🆔 Quote ID",
@@ -61,6 +59,67 @@ layout = dbc.Container(
         ),
         dbc.Row(
             [
+                html.H4("Tweet Table", className="mt-4 mb-3"),
+                dash_table.DataTable(
+                    id="tweet-selector-table",
+                    columns=[
+                        {
+                            "name": icon_map.get(i, i),
+                            "id": i,
+                            "selectable": True,
+                        }
+                        for i in config.COLUMS_FOR_Causal_Impact_selection.keys()
+                    ],
+                    data=TWEET_DATA.to_dict("records"),
+                    sort_action="native",
+                    filter_action="native",
+                    column_selectable="single",
+                    selected_columns=[],
+                    page_size=15,
+                    style_table={
+                        "overflowX": "auto",
+                        "color": "white",
+                    },
+                    style_header={
+                        "backgroundColor": "#2c2c2c",
+                        "color": "white",
+                        "fontWeight": "bold",
+                        "border": "1px solid #444",
+                        "textAlign": "center",
+                    },
+                    style_cell={
+                        "backgroundColor": "#1e1e1e",
+                        "color": "#FFF",
+                        "textAlign": "left",
+                        "padding": "10px",
+                        "fontFamily": "sans-serif",
+                        "border": "1px solid #333",
+                    },
+                    style_filter={
+                        "backgroundColor": "#333",
+                        "color": "white",
+                    },
+                    style_data_conditional=[
+                        {
+                            "if": {"column_editable": False},
+                            "backgroundColor": "#1e1e1e",
+                        },
+                        {
+                            "if": {"row_index": "odd"},
+                            "backgroundColor": "#252525",
+                        },
+                        {
+                            "if": {"state": "active"},
+                            "backgroundColor": "#3d3d3d",
+                            "border": "1px solid #primary",
+                        },
+                    ],
+                ),
+                html.Div(id="selection-output", className="mt-3"),
+            ]
+        ),
+        dbc.Row(
+            [
                 dbc.Col(
                     dbc.Stack(),
                     md=4,
@@ -76,7 +135,7 @@ layout = dbc.Container(
                                 className="fw-semibold fs-4",
                             ),
                             dcc.DatePickerSingle(
-                                id="date-from-picker",
+                                id="date-from-picker-causalimpact",
                                 min_date_allowed=DOGE_MIN_DATE,
                                 max_date_allowed=DOGE_MAX_DATE,
                                 initial_visible_month=DOGE_MIN_DATE,
@@ -104,7 +163,7 @@ layout = dbc.Container(
                                 className="fw-semibold fs-4",
                             ),
                             dcc.DatePickerSingle(
-                                id="date-to-picker",
+                                id="date-to-picker-causalimpact",
                                 min_date_allowed=DOGE_MIN_DATE,
                                 max_date_allowed=DOGE_MAX_DATE,
                                 initial_visible_month=DOGE_MAX_DATE,
@@ -142,7 +201,7 @@ layout = dbc.Container(
                             ),
                             dbc.CardBody(
                                 dcc.Graph(
-                                    id="price-volume-graph",
+                                    id="causalimpact-graph",
                                     figure={"data": [], "layout": {}},
                                 )
                             ),
@@ -167,46 +226,6 @@ layout = dbc.Container(
             ],
             className="g-4 mb-4",
         ),
-        dbc.Row(
-            [
-                html.H4("Tweet Analysis Table", className="mt-4 mb-3"),
-                dash_table.DataTable(
-                    id="tweet-selector-table",
-                    columns=[
-                        {
-                            "name": icon_map.get(i, i),
-                            "id": i,
-                            "selectable": True,
-                        }
-                        for i in TWEET_DATA.columns
-                    ],
-                    data=TWEET_DATA.to_dict("records"),
-                    sort_action="native",
-                    filter_action="native",
-                    column_selectable="single",
-                    selected_columns=[],
-                    page_size=15,
-                    style_table={"overflowX": "auto"},
-                    style_cell={
-                        "textAlign": "left",
-                        "padding": "10px",
-                        "fontFamily": "sans-serif",
-                    },
-                    style_header={
-                        "backgroundColor": "#f8f9fa",
-                        "fontWeight": "bold",
-                        "borderBottom": "2px solid #dee2e6",
-                    },
-                    style_data_conditional=[
-                        {
-                            "if": {"column_type": "any"},
-                            "backgroundColor": "white",
-                        }
-                    ],
-                ),
-                html.Div(id="selection-output", className="mt-3"),
-            ]
-        ),
     ],
     fluid=True,
     className="dbc p-4 dbc-dark-theme",
@@ -215,12 +234,38 @@ layout = dbc.Container(
 
 @callback(
     Output("selection-output", "children"),
-    Input("tweet-selector-table", "selected_columns"),
+    Input("tweet-selector-table", "active_cell"),
+    State("tweet-selector-table", "data"),
 )
-def handle_selection(selected_columns):
-    if not selected_columns:
-        return "Click the selection button above a column to analyze it."
+def display_row_details(active_cell, table_data):
+    if not active_cell:
+        return "Click on any row to see details."
 
-    return dbc.Alert(
-        f"Currently analyzing: {selected_columns[0]}", color="primary"
+    row_index = active_cell["row"]
+
+    selected_row = table_data[row_index]
+
+    tweet_text = selected_row.get("quote", "No text available")
+    timestamp = selected_row.get("timestamp", "N/A")
+
+    return dbc.Card(
+        dbc.CardBody(
+            [
+                html.H5(
+                    "📊 Selected Tweet Details",
+                    className="card-title text-info",
+                ),
+                html.P(
+                    f"Row Index: {row_index}", className="text-muted small"
+                ),
+                html.Hr(),
+                html.P(tweet_text, className="fs-5"),
+                dbc.Badge(
+                    f"Unix TS: {timestamp}",
+                    color="secondary",
+                    className="me-2",
+                ),
+            ]
+        ),
+        className="mt-3 bg-dark border-secondary text-white",
     )
