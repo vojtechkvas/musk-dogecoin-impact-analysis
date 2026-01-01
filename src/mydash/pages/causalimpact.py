@@ -122,7 +122,7 @@ layout = dbc.Container(
             [
                 dbc.Col(
                     dbc.Stack(),
-                    md=4,
+                    md=2,
                     sm=12,
                     xs=12,
                 ),
@@ -130,27 +130,26 @@ layout = dbc.Container(
                     dbc.Stack(
                         [
                             dbc.Label(
-                                "Date from",
+                                "Minutes before tweet",
                                 html_for="date-from-picker",
                                 className="fw-semibold fs-4",
                             ),
-                            dcc.DatePickerSingle(
-                                id="date-from-picker-causalimpact",
-                                min_date_allowed=DOGE_MIN_DATE,
-                                max_date_allowed=DOGE_MAX_DATE,
-                                initial_visible_month=DOGE_MIN_DATE,
-                                date=DOGE_MIN_DATE,
-                                placeholder="Select start date",
-                                calendar_orientation="vertical",
-                                className="fs-5",
+                            dbc.Input(
+                                id="num-from-input-causalimpact",
+                                type="number",
+                                min=0,
+                                step=10,
+                                value=120,
+                                placeholder="e.g. 10",
+                                className="fs-5 bg-dark text-white border-secondary",
                             ),
                             html.Small(
-                                "Start date for DOGE data filtering",
+                                "Number of minutes before tweet used for training",
                                 className="text-muted fs-5",
                             ),
                         ]
                     ),
-                    md=2,
+                    md=4,
                     sm=6,
                     xs=12,
                 ),
@@ -158,33 +157,32 @@ layout = dbc.Container(
                     dbc.Stack(
                         [
                             dbc.Label(
-                                "Date to",
+                                "Minutes after tweet",
                                 html_for="date-to-picker",
                                 className="fw-semibold fs-4",
                             ),
-                            dcc.DatePickerSingle(
-                                id="date-to-picker-causalimpact",
-                                min_date_allowed=DOGE_MIN_DATE,
-                                max_date_allowed=DOGE_MAX_DATE,
-                                initial_visible_month=DOGE_MAX_DATE,
-                                date=DOGE_MAX_DATE,
-                                placeholder="Date To",
-                                calendar_orientation="vertical",
-                                className="fs-5",
+                            dbc.Input(
+                                id="num-to-input-causalimpact",
+                                type="number",
+                                min=0,
+                                step=10,
+                                value=60,
+                                placeholder="e.g. 10",
+                                className="fs-5 bg-dark text-white border-secondary",
                             ),
                             html.Small(
-                                "End date for DOGE data filtering",
+                                "Number of minutes after tweet used for prediction",
                                 className="text-muted fs-5",
                             ),
                         ]
                     ),
-                    md=2,
+                    md=4,
                     sm=6,
                     xs=12,
                 ),
                 dbc.Col(
                     dbc.Stack(),
-                    md=4,
+                    md=2,
                     sm=12,
                 ),
             ],
@@ -234,12 +232,18 @@ layout = dbc.Container(
 
 @callback(
     Output("selection-output", "children"),
+    Input("num-from-input-causalimpact", "num_from"),
+    Input("num-to-input-causalimpact", "num_to"),
     Input("tweet-selector-table", "active_cell"),
     State("tweet-selector-table", "data"),
 )
-def display_row_details(active_cell, table_data):
+def display_row_details(num_from, num_to, active_cell, table_data):
     if not active_cell:
         return "Click on any row to see details."
+
+    print(num_from)
+    print(num_to)
+    print(active_cell)
 
     row_index = active_cell["row"]
 
@@ -248,7 +252,7 @@ def display_row_details(active_cell, table_data):
     tweet_text = selected_row.get("quote", "No text available")
     timestamp = selected_row.get("timestamp", "N/A")
 
-    return dbc.Card(
+    card = dbc.Card(
         dbc.CardBody(
             [
                 html.H5(
@@ -269,3 +273,5 @@ def display_row_details(active_cell, table_data):
         ),
         className="mt-3 bg-dark border-secondary text-white",
     )
+
+    return card
