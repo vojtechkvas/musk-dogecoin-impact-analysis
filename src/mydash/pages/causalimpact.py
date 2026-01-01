@@ -11,6 +11,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 
+import src.config.config as config
 from src.config.config import (
     DEFAULT_DOGE_KEYWORDS,
     DOGE_MAX_DATE,
@@ -19,6 +20,31 @@ from src.config.config import (
 
 dash.register_page(__name__, path="/causalimpact")
 
+
+import dash_bootstrap_components as dbc
+import pandas as pd
+from dash import Input, Output, callback, dash_table, html
+
+# 1. Map your columns to icons/labels for the UI
+icon_map = {
+    "possibly_sensitive": "⚠️ Sensitive",
+    "quote_id": "🆔 Quote ID",
+    "quote": "💬 Quote",
+    "retweet": "🔁 Retweet",
+    "timestamp": "🕒 Timestamp",
+}
+
+
+from src.data_utils import formatters, loaders, processing, utils
+
+TWEET_DATA = loaders.load_data(
+    config.PROCESSED_DIR,
+    config.PROCESSED_TWEETS_DOGECOIN_PATH,
+    types=config.POSTS_DTYPES,
+    skiprows=1,
+)
+
+TWEET_DATA = utils.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
 
 layout = dbc.Container(
     [
@@ -141,7 +167,60 @@ layout = dbc.Container(
             ],
             className="g-4 mb-4",
         ),
+        dbc.Row(
+            [
+                html.H4("Tweet Analysis Table", className="mt-4 mb-3"),
+                dash_table.DataTable(
+                    id="tweet-selector-table",
+                    columns=[
+                        {
+                            "name": icon_map.get(i, i),
+                            "id": i,
+                            "selectable": True,
+                        }
+                        for i in TWEET_DATA.columns
+                    ],
+                    data=TWEET_DATA.to_dict("records"),
+                    sort_action="native",
+                    filter_action="native",
+                    column_selectable="single",
+                    selected_columns=[],
+                    page_size=15,
+                    style_table={"overflowX": "auto"},
+                    style_cell={
+                        "textAlign": "left",
+                        "padding": "10px",
+                        "fontFamily": "sans-serif",
+                    },
+                    style_header={
+                        "backgroundColor": "#f8f9fa",
+                        "fontWeight": "bold",
+                        "borderBottom": "2px solid #dee2e6",
+                    },
+                    style_data_conditional=[
+                        {
+                            "if": {"column_type": "any"},
+                            "backgroundColor": "white",
+                        }
+                    ],
+                ),
+                html.Div(id="selection-output", className="mt-3"),
+            ]
+        ),
     ],
     fluid=True,
     className="dbc p-4 dbc-dark-theme",
 )
+
+
+@callback(
+    Output("selection-output", "children"),
+    Input("tweet-selector-table", "selected_columns"),
+)
+def handle_selection(selected_columns):
+    if not selected_columns:
+        return "Click the selection button above a column to analyze it."
+
+    return dbc.Alert(
+        f"Currently analyzing: {selected_columns[0]}", color="primary"
+    )
