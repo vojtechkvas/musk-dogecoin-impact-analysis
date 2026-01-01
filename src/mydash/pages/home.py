@@ -286,7 +286,6 @@ main_layout = dbc.Container(
                     width=12,
                 )
             ],
-            #   className="g-4 mb-4",
             className="g-4",
         ),
     ],

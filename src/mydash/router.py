@@ -28,14 +28,28 @@ def layout() -> dbc.Container:
         [
             dbc.NavbarSimple(
                 children=[
-                    dbc.NavItem(dbc.NavLink("Home", href="/", active="exact")),
                     dbc.NavItem(
-                        dbc.NavLink("Deep Analysis", href="/analysis", active="exact")
+                        dbc.NavLink(
+                            "Home",
+                            href="/",
+                            active="exact",
+                            className="fs-5 mx-2",
+                        )
+                    ),
+                    dbc.NavItem(
+                        dbc.NavLink(
+                            "Deep Analysis",
+                            href="/analysis",
+                            active="exact",
+                            className="fs-5 mx-2",
+                        )
                     ),
                 ],
                 brand="DOGE Tracker",
+                brand_style={"fontSize": "2.5rem", "fontWeight": "bold"},
                 color="primary",
                 dark=True,
+                className="fs-3",
             ),
             dash.page_container,
         ],

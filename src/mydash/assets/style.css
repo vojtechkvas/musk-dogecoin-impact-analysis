@@ -1,13 +1,13 @@
 .DateInput_input {
     background-color: black;
-    color: #FFF !important;
+    color: white !important;
     font-weight: bold !important;
     border-radius: 12px !important;
 }
 
 .DateInput_input::placeholder {
     background-color: black;
-    color: #FFF !important;
+    color: white !important;
     font-weight: bold !important;
     opacity: 1;
     border-radius: 12px !important;
