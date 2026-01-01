@@ -7,6 +7,14 @@ visualization settings.
 RAW_TWEETS_POSTS = "all_musk_posts.csv"
 RAW_TWEETS_QUOTE = "musk_quote_tweets.csv"
 RAW_DOGE_PRICE_PATH = "DOGEUSDT.csv"
+RAW_CRYPTO_PRICE_PATHS = [
+    "BNBUSDT.csv",
+    "BTCUSDT.csv",
+    "ETHUSDT.csv",
+    "FLOKIUSDT.csv",
+    "SOLUSDT.csv",
+]
+
 
 PROCESSED_TWEETS_DOGECOIN_PATH = "musk_posts_dogecoin.csv"
 PROCESSED_DOGE_PRICE_PATH = "dogecoin_to_usdt.csv"
