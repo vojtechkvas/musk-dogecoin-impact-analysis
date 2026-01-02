@@ -7,48 +7,24 @@ for specialized data visualizations and in-depth performance metrics
 related to Dogecoin and social media impact.
 """
 
-import dash
-import dash_bootstrap_components as dbc
-import matplotlib
-import plotly.graph_objects as go
-from dash import Input, Output, State, callback, dash_table, dcc, html
-from plotly.tools import mpl_to_plotly
-
-matplotlib.use("Agg")
 import base64
 import io
-from datetime import datetime
 
 import causalimpact
 import dash
 import dash_bootstrap_components as dbc
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
+from dash import Input, Output, State, callback, dash_table, html
 
-import src.config.config as config
-import src.data_utils.loaders as loaders
-from src.config.config import (
-    DEFAULT_DOGE_KEYWORDS,
-    DOGE_MAX_DATE,
-    DOGE_MIN_DATE,
-)
+from src.config import config
+from src.data_utils import loaders, utils
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import pandas as pd
-import plotly.graph_objects as go
-from dash import Input, Output, State, callback, dash_table, dcc, html
-
-import src.config.config as config
-from src.data_utils import loaders, utils
 
 dash.register_page(__name__, path="/causalimpact")
 
-
-import dash_bootstrap_components as dbc
-import pandas as pd
 
 icon_map = {
     "possibly_sensitive": "⚠️ Sensitive",
@@ -59,8 +35,6 @@ icon_map = {
 }
 icon_map = {}
 
-
-from src.data_utils import formatters, loaders, processing, utils
 
 TWEET_DATA = loaders.load_data(
     config.PROCESSED_DIR,
