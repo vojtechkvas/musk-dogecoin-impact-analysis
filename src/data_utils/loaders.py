@@ -63,7 +63,9 @@ def load_data(
     return df
 
 
-def save_data(directory: List[str], filename: str, df: pd.DataFrame) -> None:
+def save_data(
+    directory: List[str], filename: str, df: pd.DataFrame, index: bool = False
+) -> None:
     """
     Saves a pandas DataFrame to a CSV file in a specified directory.
 
@@ -77,6 +79,7 @@ def save_data(directory: List[str], filename: str, df: pd.DataFrame) -> None:
             (e.g., ["data", "processed"]).
         filename (str): The name of the file to be saved (e.g., "output.csv").
         df (pd.DataFrame): The pandas DataFrame to be exported.
+        index (bool): Maintain index.
 
     Returns:
         None
@@ -90,4 +93,4 @@ def save_data(directory: List[str], filename: str, df: pd.DataFrame) -> None:
 
     file_path = os.path.join(directory_path, filename)
 
-    df.to_csv(file_path, index=False)
+    df.to_csv(file_path, index=index)

@@ -17,6 +17,7 @@ RAW_CRYPTO_PRICE_PATHS = [
 
 
 PROCESSED_TWEETS_DOGECOIN_PATH = "musk_posts_dogecoin.csv"
+PROCESSED_CRYPTOS_PATH = "cryptos.csv"
 PROCESSED_DOGE_PRICE_PATH = "dogecoin_to_usdt.csv"
 
 PROCESSED_TWEETS = "combined_data.csv"

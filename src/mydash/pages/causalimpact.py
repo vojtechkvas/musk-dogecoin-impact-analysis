@@ -9,7 +9,9 @@ related to Dogecoin and social media impact.
 
 import dash
 import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
 from dash import Input, Output, State, callback, dash_table, dcc, html
+from plotly.tools import mpl_to_plotly
 
 import src.config.config as config
 from src.config.config import (
@@ -231,19 +233,8 @@ layout = dbc.Container(
 )
 
 
-@callback(
-    Output("selection-output", "children"),
-    Input("num-from-input-causalimpact", "value"),
-    Input("num-to-input-causalimpact", "value"),
-    Input("tweet-selector-table", "active_cell"),
-    State("tweet-selector-table", "data"),
-)
-def display_row_details(num_from, num_to, active_cell, table_data):
-    if not active_cell:
-        return "Click on any row to see details."
+def create_tweet_selector_table(table_data, active_cell):
 
-    print(num_from)
-    print(num_to)
     print(active_cell)
 
     row_index = active_cell["row"]
@@ -298,3 +289,98 @@ def display_row_details(num_from, num_to, active_cell, table_data):
             "color": "white",
         },
     )
+
+
+def create_causal_impact_figure(num_from, num_to, created_at):
+    from datetime import datetime
+
+    import matplotlib.pyplot as plt
+    import pandas as pd
+
+    import src.config.config as config
+    import src.data_utils.loaders as loaders
+
+    print(created_at)
+    created_at = pd.to_datetime(created_at).tz_localize(None).floor("min")
+
+    print(created_at)
+
+    import causalimpact
+    import numpy as np
+    import pandas as pd
+
+    cryptos = loaders.load_data(
+        config.PROCESSED_DIR, config.PROCESSED_CRYPTOS_PATH
+    )
+    print(f"Initial loaded: {len(cryptos)} rows.")
+    print(cryptos.tail())
+    cryptos["timestamp"] = pd.to_datetime(cryptos["timestamp"])
+    cryptos.set_index("timestamp", inplace=True)
+
+    config.RAW_CRYPTO_PRICE_PATHS
+
+    start_date = created_at - pd.Timedelta(minutes=num_from)
+    intervention_date = created_at
+    end_date = created_at + pd.Timedelta(minutes=num_to)
+
+    pre_period = [
+        #   str(data.index[0].date()),
+        str((start_date)),
+        str((intervention_date)),
+    ]
+
+    post_period = [
+        str(intervention_date + pd.Timedelta(minutes=1)),
+        str(end_date),
+    ]
+
+    analysis_start = pd.to_datetime(pre_period[0])
+    analysis_end = pd.to_datetime(post_period[1])
+    data_ci = cryptos.loc[analysis_start:analysis_end].copy()
+
+    print(len(data_ci))
+    print(data_ci)
+
+    data_ci = data_ci.dropna(axis=1, how="any")
+    print(data_ci)
+    print(len(data_ci))
+
+    print(pre_period)
+    print(post_period)
+
+    ci = causalimpact.CausalImpact(data_ci, pre_period, post_period)
+
+    return ci
+
+
+@callback(
+    Output("selection-output", "children"),
+    Output("causalimpact-graph", "figure"),
+    Input("num-from-input-causalimpact", "value"),
+    Input("num-to-input-causalimpact", "value"),
+    State("tweet-selector-table", "data"),
+    Input("tweet-selector-table", "active_cell"),
+    #  background=True,
+)
+def display_row_details(num_from, num_to, table_data, active_cell):
+
+    if not active_cell:
+        return "Click on any row to see details.", go.Figure()
+
+    card = create_tweet_selector_table(table_data, active_cell)
+
+    row_index = active_cell["row"]
+    selected_row = table_data[row_index]
+
+    ci = create_causal_impact_figure(
+        num_from, num_to, created_at=selected_row["created_at"]
+    )
+
+    mpl_fig = ci.plot()
+    plotly_fig = mpl_to_plotly(mpl_fig)
+
+    plotly_fig.update_layout(
+        template="plotly_dark", margin=dict(l=20, r=20, t=40, b=20)
+    )
+    print("return")
+    return card, plotly_fig
