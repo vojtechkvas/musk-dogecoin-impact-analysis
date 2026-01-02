@@ -17,13 +17,18 @@ from plotly.tools import mpl_to_plotly
 matplotlib.use("Agg")
 import base64
 import io
+from datetime import datetime
 
+import causalimpact
 import dash
 import dash_bootstrap_components as dbc
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 import src.config.config as config
+import src.data_utils.loaders as loaders
 from src.config.config import (
     DEFAULT_DOGE_KEYWORDS,
     DOGE_MAX_DATE,
@@ -137,7 +142,6 @@ layout = dbc.Container(
                         },
                     ],
                 ),
-                html.Div(id="selection-output", className="mt-3"),
             ]
         ),
         dbc.Row(
@@ -236,20 +240,32 @@ layout = dbc.Container(
                                         html.Hr(),
                                         html.H5(
                                             "Analysis Summary",
-                                            className="text-primary mt-3",
+                                            className="text-primary mt-3 text-center",
                                         ),
                                         html.Pre(
+                                            "Summary",
                                             id="causal-summary-text",
                                             className="text-white bg-black p-3 border border-white",
+                                            style={
+                                                "textAlign": "center",
+                                                "margin": "0 auto",
+                                                "width": "fit-content",
+                                            },
                                         ),
                                         html.H5(
                                             "Detailed Report",
-                                            className="text-primary mt-3",
+                                            className="text-primary mt-3 text-center",
                                         ),
                                         html.Pre(
+                                            "Report",
                                             id="causal-report-text",
                                             className="text-white bg-black p-3 border border-white",
-                                            style={"whiteSpace": "pre-wrap"},
+                                            style={
+                                                "whiteSpace": "pre-wrap",
+                                                "textAlign": "center",
+                                                "margin": "0 auto",
+                                                "width": "fit-content",
+                                            },
                                         ),
                                     ]
                                 ),
@@ -274,6 +290,14 @@ layout = dbc.Container(
                 )
             ],
             className="g-4 mb-4",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Div(id="selection-output", className="mt-3 mb-5"),
+                    width=12,
+                )
+            ]
         ),
     ],
     fluid=True,
@@ -340,21 +364,11 @@ def create_tweet_selector_table(table_data, active_cell):
 
 
 def create_causal_impact_figure(num_from, num_to, created_at):
-    from datetime import datetime
-
-    import pandas as pd
-
-    import src.config.config as config
-    import src.data_utils.loaders as loaders
 
     print(created_at)
     created_at = pd.to_datetime(created_at).tz_localize(None).floor("min")
 
     print(created_at)
-
-    import causalimpact
-    import numpy as np
-    import pandas as pd
 
     cryptos = loaders.load_data(
         config.PROCESSED_DIR, config.PROCESSED_CRYPTOS_PATH
@@ -439,7 +453,7 @@ def display_row_details(num_from, num_to, table_data, active_cell):
         return (
             card,
             f"data:image/png;base64,{encoded_image}",
-            ci.summary(),
+            "\n".join(ci.summary().splitlines()[:-1]),
             ci.summary("report"),
         )
     except Exception as e:
