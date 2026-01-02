@@ -9,9 +9,19 @@ related to Dogecoin and social media impact.
 
 import dash
 import dash_bootstrap_components as dbc
+import matplotlib
 import plotly.graph_objects as go
 from dash import Input, Output, State, callback, dash_table, dcc, html
 from plotly.tools import mpl_to_plotly
+
+matplotlib.use("Agg")
+import base64
+import io
+
+import dash
+import dash_bootstrap_components as dbc
+import matplotlib
+import matplotlib.pyplot as plt
 
 import src.config.config as config
 from src.config.config import (
@@ -19,6 +29,15 @@ from src.config.config import (
     DOGE_MAX_DATE,
     DOGE_MIN_DATE,
 )
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pandas as pd
+import plotly.graph_objects as go
+from dash import Input, Output, State, callback, dash_table, dcc, html
+
+import src.config.config as config
+from src.data_utils import loaders, utils
 
 dash.register_page(__name__, path="/causalimpact")
 
@@ -201,10 +220,39 @@ layout = dbc.Container(
                                 html.H4("Price and Tweet Volume Over Time")
                             ),
                             dbc.CardBody(
-                                dcc.Graph(
-                                    id="causalimpact-graph",
-                                    figure={"data": [], "layout": {}},
-                                )
+                                dbc.CardBody(
+                                    [
+                                        dbc.Spinner(
+                                            html.Img(
+                                                id="causalimpact-plot-img",
+                                                style={
+                                                    "width": "80%",
+                                                    "height": "auto",
+                                                    "paddingLeft": "20%",
+                                                },
+                                            ),
+                                            color="primary",
+                                        ),
+                                        html.Hr(),
+                                        html.H5(
+                                            "Analysis Summary",
+                                            className="text-primary mt-3",
+                                        ),
+                                        html.Pre(
+                                            id="causal-summary-text",
+                                            className="text-white bg-black p-3 border border-white",
+                                        ),
+                                        html.H5(
+                                            "Detailed Report",
+                                            className="text-primary mt-3",
+                                        ),
+                                        html.Pre(
+                                            id="causal-report-text",
+                                            className="text-white bg-black p-3 border border-white",
+                                            style={"whiteSpace": "pre-wrap"},
+                                        ),
+                                    ]
+                                ),
                             ),
                             dbc.CardFooter(
                                 html.Div(
@@ -294,7 +342,6 @@ def create_tweet_selector_table(table_data, active_cell):
 def create_causal_impact_figure(num_from, num_to, created_at):
     from datetime import datetime
 
-    import matplotlib.pyplot as plt
     import pandas as pd
 
     import src.config.config as config
@@ -324,7 +371,6 @@ def create_causal_impact_figure(num_from, num_to, created_at):
     end_date = created_at + pd.Timedelta(minutes=num_to)
 
     pre_period = [
-        #   str(data.index[0].date()),
         str((start_date)),
         str((intervention_date)),
     ]
@@ -355,32 +401,53 @@ def create_causal_impact_figure(num_from, num_to, created_at):
 
 @callback(
     Output("selection-output", "children"),
-    Output("causalimpact-graph", "figure"),
+    Output("causalimpact-plot-img", "src"),
+    Output("causal-summary-text", "children"),
+    Output("causal-report-text", "children"),
     Input("num-from-input-causalimpact", "value"),
     Input("num-to-input-causalimpact", "value"),
     State("tweet-selector-table", "data"),
     Input("tweet-selector-table", "active_cell"),
     #  background=True,
+    prevent_initial_call=True,
 )
 def display_row_details(num_from, num_to, table_data, active_cell):
 
     if not active_cell:
-        return "Click on any row to see details.", go.Figure()
+        return "Click on any row to see details.", "", "", ""
 
-    card = create_tweet_selector_table(table_data, active_cell)
+    try:
+        card = create_tweet_selector_table(table_data, active_cell)
+        selected_row = table_data[active_cell["row"]]
 
-    row_index = active_cell["row"]
-    selected_row = table_data[row_index]
+        ci = create_causal_impact_figure(
+            num_from, num_to, selected_row["created_at"]
+        )
+        print(ci.summary())
+        print(ci.summary("report"))
 
-    ci = create_causal_impact_figure(
-        num_from, num_to, created_at=selected_row["created_at"]
-    )
+        ci.plot()
 
-    mpl_fig = ci.plot()
-    plotly_fig = mpl_to_plotly(mpl_fig)
+        fig = plt.gcf()
 
-    plotly_fig.update_layout(
-        template="plotly_dark", margin=dict(l=20, r=20, t=40, b=20)
-    )
-    print("return")
-    return card, plotly_fig
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png", bbox_inches="tight")
+
+        plt.close("all")
+
+        encoded_image = base64.b64encode(buf.getvalue()).decode("utf-8")
+        return (
+            card,
+            f"data:image/png;base64,{encoded_image}",
+            ci.summary(),
+            ci.summary("report"),
+        )
+    except Exception as e:
+        print(f"Error: {e}")
+        error_msg = f"Plotting Error: {str(e)}"
+        return (
+            html.Div(f"Plotting Error: {str(e)}", className="text-danger"),
+            "",
+            error_msg,
+            "",
+        )
