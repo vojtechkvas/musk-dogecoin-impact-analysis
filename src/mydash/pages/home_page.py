@@ -220,8 +220,9 @@ main_layout = dbc.Container(
                                             "Activity peaked between 2021 and 2022. "
                                         ),
                                         html.P(
-                                            "A preliminary visual inspection suggests that while individual tweets "
-                                            "may cause short term volatility, they do not appear to sustain "
+                                            "A preliminary visual inspection suggests that while "
+                                            "individual tweets may cause short term volatility, "
+                                            "they do not appear to sustain "
                                             "significant price increases over extended periods."
                                         ),
                                     ],
@@ -255,21 +256,27 @@ main_layout = dbc.Container(
                                     [
                                         html.P(
                                             [
-                                                "The data suggests that Elon Musk's tweets have a measurable impact on Dogecoin's price volatility. ",
+                                                "The data suggests that Elon Musk's tweets have a "
+                                                "measurable impact on Dogecoin's price "
+                                                "volatility. ",
                                                 "On average (indicated by the ",
                                                 html.B("white line"),
                                                 "), the price increases by ",
                                                 html.B("4%"),
-                                                " shortly after a tweet, though this gain typically retraces to approximately ",
+                                                " shortly after a tweet, though this gain "
+                                                "typically "
+                                                "retraces to approximately ",
                                                 html.B("1%"),
                                                 " after six hours.",
                                             ]
                                         ),
                                         html.P(
                                             [
-                                                "Historically, the highest average returns occurred when selling approximately ",
+                                                "Historically, the highest average returns "
+                                                "occurred when selling approximately ",
                                                 html.B("45 minutes"),
-                                                " after a tweet, yielding an average gain of 4%. However, these patterns are ",
+                                                " after a tweet, yielding an average gain of 4%. "
+                                                "However, these patterns are ",
                                                 html.Span(
                                                     "not guaranteed",
                                                     className="text-danger fw-bold",

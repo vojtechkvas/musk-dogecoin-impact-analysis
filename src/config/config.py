@@ -149,15 +149,15 @@ HOVER_COLUMNS = [
 ]
 
 
-COLUMS_FOR_Causal_Impact_selection = {
-    "id": "int64",
-    "full_text": "string",
-    "created_at": "object",
-    "retweet_count": "Int64",
-    "reply_count": "Int64",
-    "like_count": "Int64",
-    "quote_count": "Int64",
-    "view_count": "Int64",
-    "bookmark_count": "Int64",
-    "url": "string",
-}
+COLUMS_FOR_CAUSAL_IMPACT_SELECTION = [
+    "id",
+    "full_text",
+    "created_at",
+    "retweet_count",
+    "reply_count",
+    "like_count",
+    "quote_count",
+    "view_count",
+    "bookmark_count",
+    "url",
+]

@@ -1,9 +1,25 @@
 """
 Dashboard Callback Module for Dogecoin Price and Social Media Impact Analysis.
 
-This module handles the data visualization logic for the Dash application,
-including price-volume charts, tweet impact analysis, and KPI calculations
-based on filtered time ranges and text queries.
+This module orchestrates the reactive data pipeline for the primary dashboard.
+It manages the high-performance loading of historical price and social data,
+processes user-driven filtering (temporal and textual), and updates complex
+Plotly visualizations to reveal correlation patterns between influencer
+activity and cryptocurrency volatility.
+
+Key Functionalities:
+    - Data Initialization: Loads and synchronizes multi-source datasets
+      (Binance price history and Twitter/X archives) with optimized timestamp
+      conversions.
+    - Multi-Axis Plotting: Constructs primary price-volume figures with
+      overlaid event markers and standardized unified hover templates.
+    - Normalization Analysis: Calculates and visualizes "Tweet Impact"
+      trajectories by normalizing asset prices to the exact minute of a
+      social media post.
+    - KPI Orchestration: Reactive calculation of aggregate metrics, including
+      volume counts and average prices during specified periods.
+    - Temporal Controls: Provides specialized shortcuts for historical
+      milestones, such as the initial mention of the DOGE department.
 """
 
 import pandas as pd
@@ -27,8 +43,6 @@ STOCK_DATA = loaders.load_data(
     skiprows=1,
 )
 
-STOCK_DATA = utils.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
-
 TWEET_DATA = loaders.load_data(
     config.PROCESSED_DIR,
     config.PROCESSED_TWEETS_DOGECOIN_PATH,
@@ -36,6 +50,7 @@ TWEET_DATA = loaders.load_data(
     skiprows=1,
 )
 
+STOCK_DATA = utils.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
 TWEET_DATA = utils.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
 
 
