@@ -208,9 +208,14 @@ main_layout = dbc.Container(
                                 html.H4("Price and Tweet Volume Over Time")
                             ),
                             dbc.CardBody(
-                                dcc.Graph(
-                                    id="price-volume-graph",
-                                    figure={"data": [], "layout": {}},
+                                dcc.Loading(
+                                    id="loading-price-volume",
+                                    type="circle",
+                                    children=dcc.Graph(
+                                        id="price-volume-graph",
+                                        figure={"data": [], "layout": {}},
+                                    ),
+                                    color="blue",
                                 )
                             ),
                             dbc.CardFooter(
@@ -246,9 +251,14 @@ main_layout = dbc.Container(
                                 )
                             ),
                             dbc.CardBody(
-                                dcc.Graph(
-                                    id="tweet-impact-graph",
-                                    figure={"data": [], "layout": {}},
+                                dcc.Loading(
+                                    id="loading-tweet-impact",
+                                    type="circle",
+                                    children=dcc.Graph(
+                                        id="tweet-impact-graph",
+                                        figure={"data": [], "layout": {}},
+                                    ),
+                                    color="white",  # Match your average line color
                                 )
                             ),
                             dbc.CardFooter(

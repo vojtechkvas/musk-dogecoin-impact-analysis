@@ -244,7 +244,7 @@ def display_row_details(
         return html.Div(error_msg, className="text-danger"), "", error_msg, ""
 
     except FileNotFoundError as e:
-        error_msg = "Critical Error: Price data file not found."
+        error_msg = f"Critical Error: Price data file not found: {str(e)}"
         return html.Div(error_msg, className="text-danger"), "", error_msg, ""
 
     except RuntimeError as e:
