@@ -54,9 +54,6 @@ STOCK_DATA = utils.convert_unix_timestamp_to_datetime(df=STOCK_DATA)
 TWEET_DATA = utils.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
 
 
-print("Data Loaded: STOCK_DATA and TWEET_DATA")
-
-
 def _build_main_price_figure(
     coin_stock_df: pd.DataFrame, coin_tweet_df: pd.DataFrame
 ) -> tuple[go.Figure, str, list[str]]:
@@ -82,9 +79,9 @@ def _build_main_price_figure(
     fig = go.Figure()
     fig.update_layout(
         template="plotly_dark",
-        height=600,
+        height=900,
         font={"size": 18},
-        xaxis_title={"text": "Ti", "font": {"size": 20}},
+        xaxis_title={"text": "Time", "font": {"size": 20}},
         yaxis_title={"text": "USDT", "font": {"size": 20}},
         legend={
             "font": {"size": 16},
@@ -194,14 +191,7 @@ def update_dashboard(
             - impact_kpi (str): Formatted string of avg price at tweet timestamps.
     """
 
-    print(
-        f"Filters Applied - Date From: {date_from}, Date To: {date_to}, Text Filter: {text_filter}"
-    )
-
-    print(f"Raw Date Inputs - From: {date_from}, To: {date_to}")
-
     if date_from is None or date_to is None:
-        print("Date input is None. Returning empty dashboard state.")
 
         return (
             go.Figure(),
@@ -226,11 +216,9 @@ def update_dashboard(
         & (coin_tweet_df["timestamp"] <= date_to_timestamp)
     ]
 
-    print(f"Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
     coin_tweet_df = processing.filter_tweets_by_keyword(
         coin_tweet_df, text_filter
     )
-    print(f"END Applying text filter: {text_filter}: {POSTS_TEXT_COLUMN}")
 
     fig, full_hovertemplate, colors = _build_main_price_figure(
         coin_stock_df, coin_tweet_df
@@ -250,7 +238,6 @@ def update_dashboard(
         coin_tweet_df, coin_stock_df
     )
 
-    print("Dashboard updated successfully.")
     return (
         fig,
         impact_fig,

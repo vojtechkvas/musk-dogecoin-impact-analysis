@@ -91,8 +91,6 @@ def drop_tweets_before_date(
     cutoff_timestamp = datetime.strptime(cutoff_date, "%Y-%m-%d").timestamp()
     mask = df[timestamp_column] < cutoff_timestamp
 
-    # print(f"Dropping {len(mask)} {mask.sum()} tweets before {cutoff_date}.")
-
     df_filtered = df[mask].copy()
 
     return df_filtered
@@ -102,12 +100,12 @@ def find_duplicates(
     df: DataFrame, subset_columns: List[str], display_duplicates: List[str]
 ) -> Tuple[int, pd.DataFrame]:
     """
-    Identifies and optionally prints duplicate rows based on specific columns.
+    Identifies duplicate rows based on specific columns.
 
     Args:
         df: The input DataFrame to check for duplicates.
         subset_columns: A list of column names to consider when identifying duplicates.
-        display_duplicates: A list of column names to show when printing the sample.
+        display_duplicates: A list of column names to show.
 
     Returns:
         The total count of duplicate rows found in the DataFrame.

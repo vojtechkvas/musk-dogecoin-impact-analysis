@@ -181,8 +181,7 @@ class TestDuplicateIdentification:
     def test_find_duplicates_no_duplicates_found(self):
         """
         Exercises the 'False' branch of line 119.
-        When no duplicates exist, the code should skip the print block
-        and return 0.
+        When no duplicates exist, the code should return 0.
         """
         df = pd.DataFrame(
             {"id": [1, 2, 3], "full_text": ["Post A", "Post B", "Post C"]}
@@ -217,7 +216,7 @@ class TestDuplicateIdentification:
         assert count == 2
 
     def test_find_duplicates_sorting_logic(self, sample_duplicate_df):
-        """Tests that the function prints and respects the 'full_text' sorting if present."""
+        """Tests that the function respects the 'full_text' sorting if present."""
         subset = ["full_text"]
         display = ["full_text"]
 

@@ -66,7 +66,6 @@ def create_tweet_selector_table(
         dbc.Card: A styled Dash Bootstrap Component card containing the
             formatted tweet metadata.
     """
-    print(active_cell)
 
     row_index = active_cell["row"]
     selected_row = table_data[row_index]
@@ -145,10 +144,7 @@ def create_causal_impact_figure(
             the statistical results, summary, and internal Matplotlib figures.
     """
 
-    print(created_at)
     created_at = pd.to_datetime(created_at).tz_localize(None).floor("min")
-
-    print(created_at)
 
     start_date = created_at - pd.Timedelta(minutes=num_from)
     intervention_date = created_at
@@ -168,15 +164,7 @@ def create_causal_impact_figure(
     analysis_end = pd.to_datetime(post_period[1])
     data_ci = CRYPTOS_MASTER.loc[analysis_start:analysis_end].copy()
 
-    print(len(data_ci))
-    print(data_ci)
-
     data_ci = data_ci.dropna(axis=1, how="any")
-    print(data_ci)
-    print(len(data_ci))
-
-    print(pre_period)
-    print(post_period)
 
     ci = causalimpact.CausalImpact(data_ci, pre_period, post_period)
 
@@ -233,8 +221,6 @@ def display_row_details(
         ci = create_causal_impact_figure(
             num_from, num_to, selected_row["created_at"]
         )
-        print(ci.summary())
-        print(ci.summary("report"))
 
         ci.plot()
 
@@ -254,17 +240,14 @@ def display_row_details(
         )
 
     except (ValueError, KeyError) as e:
-        print(f"Data or Model Error: {e}")
         error_msg = f"Analysis Error: {str(e)}"
         return html.Div(error_msg, className="text-danger"), "", error_msg, ""
 
     except FileNotFoundError as e:
-        print(f"Missing Data File: {e}")
         error_msg = "Critical Error: Price data file not found."
         return html.Div(error_msg, className="text-danger"), "", error_msg, ""
 
     except RuntimeError as e:
-        print(f"Model Execution Error: {e}")
         error_msg = (
             "Analysis Error: The CausalImpact model failed to converge."
         )
