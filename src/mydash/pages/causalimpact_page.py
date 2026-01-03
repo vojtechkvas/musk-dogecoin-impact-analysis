@@ -74,8 +74,11 @@ layout = dbc.Container(
                                         [
                                             html.B("Training: "),
                                             "The model analyzes the historical relationship "
-                                            "between Dogecoin and stable control variables "
-                                            "BNB, BTC, ETH, FLOKI, and SOL during the period "
+                                            "between Dogecoin and stable control variables ",
+                                            html.B("BNB, BTC, ETH, FLOKI"),
+                                            ", and ",
+                                            html.B("SOL"),
+                                            " during the period "
                                             "before a tweet occurs.",
                                         ]
                                     ),
@@ -114,7 +117,7 @@ layout = dbc.Container(
         dbc.Row(
             [
                 html.H4(
-                    "Click on tweet which you want to analyse",
+                    "Select tweet which you want to analyse:",
                     className="mt-4 mb-3",
                 ),
                 dash_table.DataTable(

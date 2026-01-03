@@ -37,6 +37,13 @@ from src.data_utils import loaders
 
 matplotlib.use("Agg")
 
+CRYPTOS_MASTER = loaders.load_data(
+    config.PROCESSED_DIR, config.PROCESSED_CRYPTOS_PATH
+)
+CRYPTOS_MASTER["timestamp"] = pd.to_datetime(CRYPTOS_MASTER["timestamp"])
+CRYPTOS_MASTER.set_index("timestamp", inplace=True)
+CRYPTOS_MASTER.sort_index(inplace=True)
+
 
 def create_tweet_selector_table(
     table_data: list[dict], active_cell: dict
@@ -143,21 +150,13 @@ def create_causal_impact_figure(
 
     print(created_at)
 
-    cryptos = loaders.load_data(
-        config.PROCESSED_DIR, config.PROCESSED_CRYPTOS_PATH
-    )
-    print(f"Initial loaded: {len(cryptos)} rows.")
-    print(cryptos.tail())
-    cryptos["timestamp"] = pd.to_datetime(cryptos["timestamp"])
-    cryptos.set_index("timestamp", inplace=True)
-
     start_date = created_at - pd.Timedelta(minutes=num_from)
     intervention_date = created_at
     end_date = created_at + pd.Timedelta(minutes=num_to)
 
     pre_period = [
-        str((start_date)),
-        str((intervention_date)),
+        str(start_date),
+        str(intervention_date),
     ]
 
     post_period = [
@@ -167,7 +166,7 @@ def create_causal_impact_figure(
 
     analysis_start = pd.to_datetime(pre_period[0])
     analysis_end = pd.to_datetime(post_period[1])
-    data_ci = cryptos.loc[analysis_start:analysis_end].copy()
+    data_ci = CRYPTOS_MASTER.loc[analysis_start:analysis_end].copy()
 
     print(len(data_ci))
     print(data_ci)
