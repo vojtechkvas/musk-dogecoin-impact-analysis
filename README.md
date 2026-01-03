@@ -12,7 +12,6 @@ https://www.kaggle.com/datasets/dadalyndell/elon-musk-tweets-2010-to-2025-march?
 
 https://www.kaggle.com/datasets/dadalyndell/elon-musk-tweets-2010-to-2025-march?resource=download&select=musk_quote_tweets.csv
 
-https://www.kaggle.com/datasets/zjjc123/elon-musk-tweets-dataset
 
 
 
@@ -61,7 +60,75 @@ Stop enviroment:
 deactivate
 ```
 
+## How to run app
+
+Start the app:
+
+```bash
+python run.py
+```
+
+Run test:
+
+```bash
+pytest
+```
+
+
+```bash
+pytest --cov=src/data_utils --cov-branch --cov-report=term-missing
+```
+
+
+Run code style:
+```bash
+find . type f -name "*.py" | xargs pylint --disable=C0301,C0103 -sn
+```
+
+### How to run jupyter notebook
+
+
+Start enviroment:
+
+```bash
+source venv-bipyt/bin/activate
+```
+
+Start Jupyter Server:
+
+```bash
+jupyter notebook
+```
+
+
+It can look for something like this:
+
+```bash
+http://localhost:8889/tree?token=fb702cccdd40cfd4f07a4ee8bf65561d34dfe958b62c6ba8
+```
+Paste it in browser, an look for file .ipynb
+
+
+
 
 
 
 Quetion mohu používat poetry
+
+
+## How to run environment
+
+Logging
+More data analysis
+IS it OK
+loadding button
+¨
+
+
+
+
+testy a vizualizacy v notebooku cisteni dat
+
+
+
+
