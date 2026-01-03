@@ -45,7 +45,7 @@ def layout() -> dbc.Container:
                         )
                     ),
                 ],
-                brand="DOGE Tracker",
+                brand="When the Billionaire Tweets",
                 brand_style={"fontSize": "2.5rem", "fontWeight": "bold"},
                 color="primary",
                 dark=True,

@@ -29,14 +29,16 @@ matplotlib.use("Agg")
 dash.register_page(__name__, path="/causalimpact")
 
 
-TWEET_DATA = loaders.load_data(
+TWEET_DATA_TABLE = loaders.load_data(
     config.PROCESSED_DIR,
     config.PROCESSED_TWEETS_DOGECOIN_PATH,
     types=config.POSTS_DTYPES,
     skiprows=1,
 )
 
-TWEET_DATA = utils.convert_datetime_to_unix_timestamp(df=TWEET_DATA)
+TWEET_DATA_TABLE = utils.convert_datetime_to_unix_timestamp(
+    df=TWEET_DATA_TABLE
+)
 
 layout = dbc.Container(
     [
@@ -52,20 +54,69 @@ layout = dbc.Container(
                 dbc.Col(
                     html.Div(
                         [
-                            html.P("Activity peaked between 2021 and 2022. "),
+                            html.H3("What is CausalImpact?"),
                             html.P(
-                                "A preliminary visual inspection suggests that while individual "
-                                "tweets may cause short term volatility, they do not appear to "
-                                "sustain significant price increases over extended periods."
+                                "CausalImpact is an open-source package developed by Google for "
+                                "causal inference. It is designed to estimate the causal effect "
+                                "of a specific intervention on a time series. In the context of "
+                                "cryptocurrency, it helps distinguish between price movements "
+                                "caused by external events, such as Elon Musk's tweets and "
+                                "movements driven by general market trends."
+                            ),
+                            html.H4("How it Works: The Counterfactual"),
+                            html.P(
+                                "The methodology relies on the construction of a Counterfactual "
+                                "model. This process is divided into three key stages:"
+                            ),
+                            html.Ul(
+                                [
+                                    html.Li(
+                                        [
+                                            html.B("Training: "),
+                                            "The model analyzes the historical relationship "
+                                            "between Dogecoin and stable control variables "
+                                            "BNB, BTC, ETH, FLOKI, and SOL during the period "
+                                            "before a tweet occurs.",
+                                        ]
+                                    ),
+                                    html.Li(
+                                        [
+                                            html.B("Prediction: "),
+                                            "Following the tweet, the model predicts how the "
+                                            "Dogecoin price would have evolved had the "
+                                            "intervention never happened, based on the "
+                                            "behavior of the control coins.",
+                                        ]
+                                    ),
+                                    html.Li(
+                                        [
+                                            html.B("Comparison: "),
+                                            "The Causal Effect is calculated as the "
+                                            "statistical difference between the "
+                                            "actual observed price and the predicted "
+                                            "counterfactual price.",
+                                        ]
+                                    ),
+                                ]
+                            ),
+                            html.P(
+                                "By using Bayesian structural time-series models, "
+                                "this approach filters out market noise, "
+                                "allowing for a more rigorous assessment of social "
+                                "media influence on asset valuation."
                             ),
                         ],
+                        style={"padding": "20px", "lineHeight": "1.6"},
                     ),
                 ),
             ]
         ),
         dbc.Row(
             [
-                html.H4("Tweet Table", className="mt-4 mb-3"),
+                html.H4(
+                    "Click on tweet which you want to analyse",
+                    className="mt-4 mb-3",
+                ),
                 dash_table.DataTable(
                     id="tweet-selector-table",
                     columns=[
@@ -76,7 +127,7 @@ layout = dbc.Container(
                         }
                         for i in config.COLUMS_FOR_CAUSAL_IMPACT_SELECTION
                     ],
-                    data=TWEET_DATA.to_dict("records"),
+                    data=TWEET_DATA_TABLE.to_dict("records"),
                     sort_action="native",
                     filter_action="native",
                     column_selectable="single",
