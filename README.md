@@ -12,6 +12,7 @@ https://www.kaggle.com/datasets/dadalyndell/elon-musk-tweets-2010-to-2025-march?
 
 https://www.kaggle.com/datasets/dadalyndell/elon-musk-tweets-2010-to-2025-march?resource=download&select=musk_quote_tweets.csv
 
+Save these files to the datasets/raw directory and process them using the exploration_and_preprocessing_tweets.ipynb notebook.
 
 ### Market Data (Cryptocurrencies)
 
@@ -35,7 +36,7 @@ https://www.cryptoarchive.com.au/asset/FLOKI
 SOL:
 https://www.cryptoarchive.com.au/asset/SOL
 
-
+Save the downloaded files to datasets/raw. Process the Dogecoin data using exploration_and_preprocessing_dogecoin_price.ipynb, and use exploration_and_preprocessing_cryptos.ipynb for the remaining assets.
 
 ## Data Exploration
 
