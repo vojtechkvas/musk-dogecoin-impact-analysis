@@ -37,17 +37,13 @@ from src.data_utils import loaders
 
 matplotlib.use("Agg")
 
-CRYPTOS_MASTER = loaders.load_data(
-    config.PROCESSED_DIR, config.PROCESSED_CRYPTOS_PATH
-)
+CRYPTOS_MASTER = loaders.load_data(config.PROCESSED_DIR, config.PROCESSED_CRYPTOS_PATH)
 CRYPTOS_MASTER["timestamp"] = pd.to_datetime(CRYPTOS_MASTER["timestamp"])
 CRYPTOS_MASTER.set_index("timestamp", inplace=True)
 CRYPTOS_MASTER.sort_index(inplace=True)
 
 
-def create_tweet_selector_table(
-    table_data: list[dict], active_cell: dict
-) -> dbc.Card:
+def create_tweet_selector_table(table_data: list[dict], selected_row: dict) -> dbc.Card:
     """
     Generates a Bootstrap Card containing detailed metadata for a selected tweet.
 
@@ -59,7 +55,7 @@ def create_tweet_selector_table(
     Args:
         table_data (list[dict]): The complete dataset from the DataTable
             represented as a list of dictionaries (records).
-        active_cell (dict): A Dash dictionary containing 'row' and 'column'
+        selected_row (dict): A Dash dictionary containing 'row' and 'column'
             indices of the user's current selection.
 
     Returns:
@@ -67,18 +63,12 @@ def create_tweet_selector_table(
             formatted tweet metadata.
     """
 
-    row_index = active_cell["row"]
-    selected_row = table_data[row_index]
-
     details_content = [
         html.Div(
             [
                 html.H3(
                     "Tweet",
                     className="text-center my-4 text-primary",
-                ),
-                html.Small(
-                    f"Viewing Row Index: {row_index}", className="text-white"
                 ),
             ],
             className="mb-3",
@@ -215,12 +205,16 @@ def display_row_details(
         return "Click on any row to see details.", "", "", ""
 
     try:
-        card = create_tweet_selector_table(table_data, active_cell)
-        selected_row = table_data[active_cell["row"]]
 
-        ci = create_causal_impact_figure(
-            num_from, num_to, selected_row["created_at"]
+        target_id = active_cell["row_id"]
+
+        selected_row = next(
+            (row for row in table_data if row.get("id") == target_id), None
         )
+
+        card = create_tweet_selector_table(table_data, selected_row)
+
+        ci = create_causal_impact_figure(num_from, num_to, selected_row["created_at"])
 
         ci.plot()
 
@@ -248,7 +242,5 @@ def display_row_details(
         return html.Div(error_msg, className="text-danger"), "", error_msg, ""
 
     except RuntimeError as e:
-        error_msg = (
-            "Analysis Error: The CausalImpact model failed to converge."
-        )
+        error_msg = "Analysis Error: The CausalImpact model failed to converge."
         return html.Div(error_msg, className="text-danger"), "", error_msg, ""
