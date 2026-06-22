@@ -151,4 +151,7 @@ COLUMS_FOR_CAUSAL_IMPACT_SELECTION = [
     "view_count",
     "bookmark_count",
     "url",
+    "is_retweet",
+    "is_quote",
+    "is_reply",
 ]
