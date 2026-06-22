@@ -103,25 +103,34 @@ find . -type f -name "*.py" | xargs pylint --disable=C0301,C0103 -sn
 
 ### How to run jupyter notebook
 
+1. Activate the Environment
 
-Start enviroment:
+Before starting, navigate to your project directory and activate your virtual environment:
 
 ```bash
 source venv-bipyt/bin/activate
 ```
 
-Start Jupyter Server:
+The quickest way to start a full notebook interface is by launching JupyterLab:
 
 ```bash
-jupyter notebook
+jupyter lab
 ```
+Note: This should automatically open a new tab in your default web browser. If it doesn't, copy and paste the http://localhost... URL displayed in your terminal into your browser.
 
 
-It can look for something like this:
 
-```bash
-http://localhost:8889/tree?token=fb702cccdd40cfd4f07a4ee8bf65561d34dfe958b62c6ba8
-```
+### 3. Option B: Run in VS Code
+If you prefer working directly inside VS Code, you have two ways to connect:
 
-Open the local server URL in your browser or use the VS Code Jupyter extension to navigate and run the .ipynb notebooks.
+#### Method 1: Native VS Code Extension (Recommended)
+1. Open your `.ipynb` file directly in VS Code.
+2. Install the official **Jupyter** extension if prompted.
+3. Click **Select Kernel** in the top-right corner of the notebook and choose your active virtual environment (`venv-bipyt`).
 
+#### Method 2: Connect via Jupyter Server URL
+If you already started `jupyter lab` in your terminal, you can connect VS Code to that running server:
+
+1. Copy the URL with the token from your terminal logs (it will look like this):
+```text
+   http://localhost:8889/tree?token=fb702cccdd40cfd4f07a4ee8bf65561d34dfe958b62c6ba8
