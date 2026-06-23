@@ -78,7 +78,9 @@ def _build_main_price_figure(
     """
     fig = go.Figure()
     fig.update_layout(
-        template="plotly_dark",
+        template="plotly_white",
+        xaxis={"showgrid": True, "gridwidth": 1, "gridcolor": "LightGrey"},
+        yaxis={"showgrid": True, "gridwidth": 1, "gridcolor": "LightGrey"},
         height=900,
         font={"size": 18},
         xaxis_title={"text": "Time", "font": {"size": 20}},
@@ -100,6 +102,7 @@ def _build_main_price_figure(
             name="Price (USD)",
             yaxis="y1",
             line={"color": "blue"},
+            zorder=10,
         )
     )
 
@@ -116,24 +119,18 @@ def _build_main_price_figure(
                 y=[y_min, y_max],
                 mode="lines",
                 name=str(row[POSTS_TEXT_COLUMN]),
-                line={"color": colors[i % len(colors)], "width": 1},
+                line={"color": colors[i % len(colors)], "width": 1.5},
                 showlegend=True,
                 hoverinfo="skip",
+                zorder=1,
             )
         )
 
-    coin_tweet_df["timestamp"] = pd.to_datetime(
-        coin_tweet_df["timestamp"], unit="s"
-    )
+    coin_tweet_df["timestamp"] = pd.to_datetime(coin_tweet_df["timestamp"], unit="s")
 
-    coin_tweet_df["date_display"] = coin_tweet_df["timestamp"].dt.strftime(
-        "%Y-%m-%d %H:%M:%S"
-    )
+    coin_tweet_df["date_display"] = coin_tweet_df["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S")
 
-    template_lines = [
-        f"<b>{col}:</b> %{{customdata[{i}]}}"
-        for i, col in enumerate(HOVER_COLUMNS)
-    ]
+    template_lines = [f"<b>{col}:</b> %{{customdata[{i}]}}" for i, col in enumerate(HOVER_COLUMNS)]
     full_hovertemplate = "<br>".join(template_lines) + "<extra></extra>"
 
     fig.add_trace(
@@ -154,9 +151,10 @@ def _build_main_price_figure(
     )
 
     fig.update_layout(
-        template="plotly_dark",
+        template="plotly_white",
         hovermode="x unified",
     )
+
     return fig, full_hovertemplate, colors
 
 
@@ -170,9 +168,7 @@ def _build_main_price_figure(
     Input("date-to-picker", "date"),
     Input("text-filter-input", "value"),
 )
-def update_dashboard(
-    date_from: str, date_to: str, text_filter: str
-) -> tuple[go.Figure, go.Figure, str, str, str]:
+def update_dashboard(date_from: str, date_to: str, text_filter: str) -> tuple[go.Figure, go.Figure, str, str, str]:
     """
     Updates the dashboard visualizations and KPIs based on user-selected
     filters for dates and tweet content.
@@ -208,35 +204,29 @@ def update_dashboard(
     coin_tweet_df = TWEET_DATA
 
     coin_stock_df = coin_stock_df[
-        (coin_stock_df["timestamp"] >= date_from_timestamp)
-        & (coin_stock_df["timestamp"] <= date_to_timestamp)
+        (coin_stock_df["timestamp"] >= date_from_timestamp) & (coin_stock_df["timestamp"] <= date_to_timestamp)
     ]
     coin_tweet_df = coin_tweet_df[
-        (coin_tweet_df["timestamp"] >= date_from_timestamp)
-        & (coin_tweet_df["timestamp"] <= date_to_timestamp)
+        (coin_tweet_df["timestamp"] >= date_from_timestamp) & (coin_tweet_df["timestamp"] <= date_to_timestamp)
     ]
 
-    coin_tweet_df = processing.filter_tweets_by_keyword(
-        coin_tweet_df, text_filter
-    )
+    coin_tweet_df = processing.filter_tweets_by_keyword(coin_tweet_df, text_filter)
 
-    fig, full_hovertemplate, colors = _build_main_price_figure(
-        coin_stock_df, coin_tweet_df
-    )
+    print(coin_tweet_df.shape)
+    coin_tweet_df = coin_tweet_df[
+        (coin_tweet_df["is_retweet"] == False)
+        & (coin_tweet_df["is_quote"] == False)
+        & (coin_tweet_df["is_reply"] == False)
+    ]
+    print(coin_tweet_df.shape)
 
-    kpi_price = (
-        f"{coin_stock_df['open'].mean():,.4f}"
-        if not coin_stock_df.empty
-        else "N/A"
-    )
+    fig, full_hovertemplate, colors = _build_main_price_figure(coin_stock_df, coin_tweet_df)
 
-    impact_fig, _ = create_tweet_impact_figure(
-        coin_tweet_df, coin_stock_df, full_hovertemplate, colors
-    )
+    kpi_price = f"{coin_stock_df['open'].mean():,.4f}" if not coin_stock_df.empty else "N/A"
 
-    avg_price_during_tweet = processing.calculate_avg_price_at_tweet_time(
-        coin_tweet_df, coin_stock_df
-    )
+    impact_fig, _ = create_tweet_impact_figure(coin_tweet_df, coin_stock_df, full_hovertemplate, colors)
+
+    avg_price_during_tweet = processing.calculate_avg_price_at_tweet_time(coin_tweet_df, coin_stock_df)
 
     return (
         fig,
@@ -247,9 +237,7 @@ def update_dashboard(
     )
 
 
-def _add_average_trend(
-    impact_fig: go.Figure, all_normalized_series: list[pd.DataFrame]
-) -> None:
+def _add_average_trend(impact_fig: go.Figure, all_normalized_series: list[pd.DataFrame]) -> None:
     """
     Calculates and plots the aggregate average price trend across all tweet events.
 
@@ -270,18 +258,12 @@ def _add_average_trend(
     if all_normalized_series:
         agg_df = pd.concat(all_normalized_series)
         agg_df["relative_hours"] = agg_df["relative_hours"].round(4)
-        mean_impact = (
-            agg_df.groupby("relative_hours")["normalized_price"]
-            .mean()
-            .reset_index()
-        )
+        mean_impact = agg_df.groupby("relative_hours")["normalized_price"].mean().reset_index()
 
         agg_post_tweet = mean_impact[mean_impact["relative_hours"] > 0]
         if not agg_post_tweet.empty:
             agg_max_val = agg_post_tweet["normalized_price"].max()
-            agg_peak_x = agg_post_tweet.loc[
-                agg_post_tweet["normalized_price"].idxmax(), "relative_hours"
-            ]
+            agg_peak_x = agg_post_tweet.loc[agg_post_tweet["normalized_price"].idxmax(), "relative_hours"]
 
             impact_fig.add_trace(
                 go.Scatter(
@@ -289,7 +271,7 @@ def _add_average_trend(
                     y=mean_impact["normalized_price"],
                     mode="lines",
                     name="AVERAGE IMPACT",
-                    line={"color": "white", "width": 3},
+                    line={"color": "black", "width": 3},
                     opacity=1.0,
                     hovertemplate=(
                         "<b>AVERAGE TREND</b><br>"
@@ -304,7 +286,7 @@ def _add_average_trend(
                 x=agg_peak_x,
                 line_dash="dash",
                 line_width=3,
-                line_color="white",
+                line_color="black",
                 annotation_text=f"AVG PEAK: {agg_max_val:.3f}x",
                 annotation_position="top right",
             )
@@ -357,9 +339,7 @@ def _process_single_tweet(
 
     tweet_price_row = window_df[window_df["timestamp"] == t_time]
     if tweet_price_row.empty:
-        tweet_price_row = window_df.iloc[
-            (window_df["timestamp"] - t_time).abs().argsort()[:1]
-        ]
+        tweet_price_row = window_df.iloc[(window_df["timestamp"] - t_time).abs().argsort()[:1]]
 
     price_at_tweet = tweet_price_row["open"].iloc[0]
     window_df["normalized_price"] = window_df["open"] / price_at_tweet
@@ -370,16 +350,14 @@ def _process_single_tweet(
 
     if not positive_df.empty:
         max_val = positive_df["normalized_price"].max()
-        peak_x = positive_df.loc[
-            positive_df["normalized_price"].idxmax(), "relative_hours"
-        ]
+        peak_x = positive_df.loc[positive_df["normalized_price"].idxmax(), "relative_hours"]
 
         impact_fig.add_vline(
             x=peak_x,
             line_dash="dot",
             line_width=1,
             line_color=color,
-            opacity=0.3,
+            opacity=1,
         )
 
         peak_info = (max_val, peak_x)
@@ -393,7 +371,7 @@ def _process_single_tweet(
             mode="lines",
             name=f"{tweet['full_text']}",
             line={"color": color, "width": 1.5},
-            opacity=0.4,
+            opacity=1.0,
             customdata=customdata,
             hovertemplate=full_hovertemplate,
         )
@@ -440,7 +418,9 @@ def create_tweet_impact_figure(
             "text": "Price Impact: 6 hours Before vs 6 hours after Tweets",
             "font": {"size": 24},
         },
-        template="plotly_dark",
+        template="plotly_white",
+        xaxis={"showgrid": True, "gridwidth": 1, "gridcolor": "LightGrey"},
+        yaxis={"showgrid": True, "gridwidth": 1, "gridcolor": "LightGrey"},
         xaxis_title={"text": "Hours relative to Tweet", "font": {"size": 20}},
         yaxis_title={"text": "Normalized Price", "font": {"size": 20}},
         hovermode="closest",
