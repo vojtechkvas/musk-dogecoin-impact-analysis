@@ -1,3 +1,9 @@
+"""Configuration module for application logging.
+
+This module sets up a dictionary-based logging configuration that outputs
+logs to both the console and a rotating file in a designated 'logs' directory.
+"""
+
 import logging.config
 import sys
 from datetime import datetime
@@ -35,7 +41,6 @@ LOGGING_CONFIG = {
         },
     },
     "loggers": {
-        # The root logger handles everything unless overridden
         "": {
             "handlers": ["console", "file"],
             "level": "DEBUG",
@@ -45,4 +50,5 @@ LOGGING_CONFIG = {
 
 
 def setup_logging():
+    """Initializes and applies the logging configuration using dictConfig."""
     logging.config.dictConfig(LOGGING_CONFIG)

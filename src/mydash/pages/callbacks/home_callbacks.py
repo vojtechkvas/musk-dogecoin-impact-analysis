@@ -214,9 +214,7 @@ def update_dashboard(date_from: str, date_to: str, text_filter: str) -> tuple[go
 
     print(coin_tweet_df.shape)
     coin_tweet_df = coin_tweet_df[
-        (coin_tweet_df["is_retweet"] == False)
-        & (coin_tweet_df["is_quote"] == False)
-        & (coin_tweet_df["is_reply"] == False)
+        ~coin_tweet_df["is_retweet"] & ~coin_tweet_df["is_quote"] & ~coin_tweet_df["is_reply"]
     ]
     print(coin_tweet_df.shape)
 

@@ -4,15 +4,15 @@ This module configures the Dash app instance, themes, and multi-page routing.
 """
 
 import dash_bootstrap_components as dbc
-from dash import Dash
+import diskcache
+from dash import Dash, DiskcacheManager
+
 
 from src.mydash import router
 from src.mydash.pages.callbacks import (  # pylint: disable=unused-import;
     causalimpact_callbacks,
     home_callbacks,
 )
-import diskcache
-from dash import Dash, DiskcacheManager
 
 cache = diskcache.Cache("./cache")
 background_callback_manager = DiskcacheManager(cache)

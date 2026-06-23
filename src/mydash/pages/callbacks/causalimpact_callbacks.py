@@ -46,7 +46,7 @@ CRYPTOS_MASTER.set_index("timestamp", inplace=True)
 CRYPTOS_MASTER.sort_index(inplace=True)
 
 
-def create_tweet_selector_table(table_data: list[dict], selected_row: dict) -> dbc.Card:
+def create_tweet_selector_table(selected_row: dict) -> dbc.Card:
     """
     Generates a Bootstrap Card containing detailed metadata for a selected tweet.
 
@@ -56,8 +56,6 @@ def create_tweet_selector_table(table_data: list[dict], selected_row: dict) -> d
     is easily readable.
 
     Args:
-        table_data (list[dict]): The complete dataset from the DataTable
-            represented as a list of dictionaries (records).
         selected_row (dict): A Dash dictionary containing 'row' and 'column'
             indices of the user's current selection.
 
@@ -65,6 +63,9 @@ def create_tweet_selector_table(table_data: list[dict], selected_row: dict) -> d
         dbc.Card: A styled Dash Bootstrap Component card containing the
             formatted tweet metadata.
     """
+
+    logger.debug(len(selected_row))
+    logger.debug(selected_row)
 
     details_content = [
         html.Div(
@@ -219,7 +220,7 @@ def display_row_details(
 
         selected_row = next((row for row in table_data if row.get("id") == target_id), None)
 
-        card = create_tweet_selector_table(table_data, selected_row)
+        card = create_tweet_selector_table(selected_row)
 
         ci = create_causal_impact_figure(selected_row["created_at"], num_from, num_to)
 
