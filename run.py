@@ -7,6 +7,12 @@ specified port.
 """
 
 from src.mydash.app import app
+import logging
+from src.config.logging_config import setup_logging
+
+setup_logging()
+
+logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     app.run(debug=False, port=8050)

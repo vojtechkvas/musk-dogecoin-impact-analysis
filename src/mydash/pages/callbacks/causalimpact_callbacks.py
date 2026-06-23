@@ -24,6 +24,7 @@ Exported Objects:
 import base64
 import io
 from typing import Any, Dict, List, Tuple, Union
+import logging
 
 import causalimpact
 import dash_bootstrap_components as dbc
@@ -35,6 +36,7 @@ from dash import Input, Output, State, callback, html
 from src.config import config
 from src.data_utils import loaders
 
+logger = logging.getLogger(__name__)
 matplotlib.use("Agg")
 
 CRYPTOS_MASTER = loaders.load_data(config.PROCESSED_DIR, config.PROCESSED_CRYPTOS_PATH)
@@ -111,9 +113,7 @@ def create_tweet_selector_table(table_data: list[dict], selected_row: dict) -> d
     )
 
 
-def create_causal_impact_figure(
-    num_from: int, num_to: int, created_at: str
-) -> causalimpact.CausalImpact:
+def create_causal_impact_figure(num_from: int, num_to: int, created_at: str) -> causalimpact.CausalImpact:
     """
     Executes a Bayesian Structural Time-Series analysis to estimate causal effect.
 
@@ -135,6 +135,9 @@ def create_causal_impact_figure(
     """
 
     created_at = pd.to_datetime(created_at).tz_localize(None).floor("min")
+
+    logger.debug(start_date)
+    logger.debug(end_date)
 
     start_date = created_at - pd.Timedelta(minutes=num_from)
     intervention_date = created_at
@@ -208,9 +211,7 @@ def display_row_details(
 
         target_id = active_cell["row_id"]
 
-        selected_row = next(
-            (row for row in table_data if row.get("id") == target_id), None
-        )
+        selected_row = next((row for row in table_data if row.get("id") == target_id), None)
 
         card = create_tweet_selector_table(table_data, selected_row)
 
