@@ -36,9 +36,7 @@ TWEET_DATA_TABLE = loaders.load_data(
     skiprows=1,
 )
 
-TWEET_DATA_TABLE = utils.convert_datetime_to_unix_timestamp(
-    df=TWEET_DATA_TABLE
-)
+TWEET_DATA_TABLE = utils.convert_datetime_to_unix_timestamp(df=TWEET_DATA_TABLE)
 
 layout = dbc.Container(
     [
@@ -200,6 +198,7 @@ layout = dbc.Container(
                                 value=120,
                                 placeholder="e.g. 10",
                                 className="fs-5 bg-dark text-white border-secondary",
+                                debounce=True,
                             ),
                             html.Small(
                                 "Number of minutes before tweet used for training",
@@ -227,6 +226,7 @@ layout = dbc.Container(
                                 value=60,
                                 placeholder="e.g. 10",
                                 className="fs-5 bg-dark text-white border-secondary",
+                                debounce=True,
                             ),
                             html.Small(
                                 "Number of minutes after tweet used for prediction",
@@ -251,9 +251,7 @@ layout = dbc.Container(
                 dbc.Col(
                     dbc.Card(
                         [
-                            dbc.CardHeader(
-                                html.H4("Price and Tweet Volume Over Time")
-                            ),
+                            dbc.CardHeader(html.H4("Price and Tweet Volume Over Time")),
                             dbc.CardBody(
                                 dbc.CardBody(
                                     [
