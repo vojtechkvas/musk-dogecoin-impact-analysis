@@ -78,7 +78,7 @@ def _build_main_price_figure(
     """
     fig = go.Figure()
     fig.update_layout(
-        template="plotly_white",
+        template="plotly_dark",
         xaxis={"showgrid": True, "gridwidth": 1, "gridcolor": "LightGrey"},
         yaxis={"showgrid": True, "gridwidth": 1, "gridcolor": "LightGrey"},
         height=900,
@@ -151,7 +151,7 @@ def _build_main_price_figure(
     )
 
     fig.update_layout(
-        template="plotly_white",
+        template="plotly_dark",
         hovermode="x unified",
     )
 
@@ -271,7 +271,7 @@ def _add_average_trend(impact_fig: go.Figure, all_normalized_series: list[pd.Dat
                     y=mean_impact["normalized_price"],
                     mode="lines",
                     name="AVERAGE IMPACT",
-                    line={"color": "black", "width": 3},
+                    line={"color": "white", "width": 3},
                     opacity=1.0,
                     hovertemplate=(
                         "<b>AVERAGE TREND</b><br>"
@@ -286,7 +286,7 @@ def _add_average_trend(impact_fig: go.Figure, all_normalized_series: list[pd.Dat
                 x=agg_peak_x,
                 line_dash="dash",
                 line_width=3,
-                line_color="black",
+                line_color="white",
                 annotation_text=f"AVG PEAK: {agg_max_val:.3f}x",
                 annotation_position="top right",
             )
@@ -418,7 +418,7 @@ def create_tweet_impact_figure(
             "text": "Price Impact: 6 hours Before vs 6 hours after Tweets",
             "font": {"size": 24},
         },
-        template="plotly_white",
+        template="plotly_dark",
         xaxis={"showgrid": True, "gridwidth": 1, "gridcolor": "LightGrey"},
         yaxis={"showgrid": True, "gridwidth": 1, "gridcolor": "LightGrey"},
         xaxis_title={"text": "Hours relative to Tweet", "font": {"size": 20}},
