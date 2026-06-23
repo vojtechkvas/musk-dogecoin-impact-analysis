@@ -179,7 +179,7 @@ def create_causal_impact_figure(
     Input("num-to-input-causalimpact", "value"),
     State("tweet-selector-table", "data"),
     Input("tweet-selector-table", "active_cell"),
-    #  background=True,
+    background=True,
     prevent_initial_call=True,
 )
 def display_row_details(

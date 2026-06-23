@@ -11,6 +11,12 @@ from src.mydash.pages.callbacks import (  # pylint: disable=unused-import;
     causalimpact_callbacks,
     home_callbacks,
 )
+import diskcache
+from dash import Dash, DiskcacheManager
+
+cache = diskcache.Cache("./cache")
+background_callback_manager = DiskcacheManager(cache)
+
 
 external_stylesheets = [dbc.themes.CYBORG, dbc.icons.FONT_AWESOME]
 
@@ -20,6 +26,7 @@ app = Dash(
     pages_folder="pages",
     external_stylesheets=external_stylesheets,
     suppress_callback_exceptions=True,
+    background_callback_manager=background_callback_manager,
 )
 
 server = app.server
