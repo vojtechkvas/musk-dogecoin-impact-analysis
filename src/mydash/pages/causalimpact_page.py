@@ -22,6 +22,7 @@ import matplotlib
 from dash import dash_table, html
 
 from src.config import config
+from src.config.config import DEFAULT_MINUTES_BEFORE_TWEET, DEFAULT_MINUTES_AFTER_TWEET
 from src.data_utils import loaders, utils
 
 matplotlib.use("Agg")
@@ -76,8 +77,7 @@ layout = dbc.Container(
                                             html.B("BNB, BTC, ETH, FLOKI"),
                                             ", and ",
                                             html.B("SOL"),
-                                            " during the period "
-                                            "before a tweet occurs.",
+                                            " during the period before a tweet occurs.",
                                         ]
                                     ),
                                     html.Li(
@@ -195,7 +195,7 @@ layout = dbc.Container(
                                 type="number",
                                 min=0,
                                 step=10,
-                                value=120,
+                                value=DEFAULT_MINUTES_BEFORE_TWEET,
                                 placeholder="e.g. 10",
                                 className="fs-5 bg-dark text-white border-secondary",
                                 debounce=True,
@@ -223,7 +223,7 @@ layout = dbc.Container(
                                 type="number",
                                 min=0,
                                 step=10,
-                                value=60,
+                                value=DEFAULT_MINUTES_AFTER_TWEET,
                                 placeholder="e.g. 10",
                                 className="fs-5 bg-dark text-white border-secondary",
                                 debounce=True,

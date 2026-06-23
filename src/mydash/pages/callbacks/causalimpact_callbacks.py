@@ -34,6 +34,7 @@ import pandas as pd
 from dash import Input, Output, State, callback, html
 
 from src.config import config
+from src.config.config import DEFAULT_MINUTES_BEFORE_TWEET, DEFAULT_MINUTES_AFTER_TWEET
 from src.data_utils import loaders
 
 logger = logging.getLogger(__name__)
@@ -113,7 +114,9 @@ def create_tweet_selector_table(table_data: list[dict], selected_row: dict) -> d
     )
 
 
-def create_causal_impact_figure(num_from: int, num_to: int, created_at: str) -> causalimpact.CausalImpact:
+def create_causal_impact_figure(
+    created_at: str, num_from: int = DEFAULT_MINUTES_BEFORE_TWEET, num_to: int = DEFAULT_MINUTES_AFTER_TWEET
+) -> causalimpact.CausalImpact:
     """
     Executes a Bayesian Structural Time-Series analysis to estimate causal effect.
 
@@ -134,14 +137,17 @@ def create_causal_impact_figure(num_from: int, num_to: int, created_at: str) -> 
             the statistical results, summary, and internal Matplotlib figures.
     """
 
-    created_at = pd.to_datetime(created_at).tz_localize(None).floor("min")
+    logger.debug(num_from)
+    logger.debug(num_to)
 
-    logger.debug(start_date)
-    logger.debug(end_date)
+    created_at = pd.to_datetime(created_at).tz_localize(None).floor("min")
 
     start_date = created_at - pd.Timedelta(minutes=num_from)
     intervention_date = created_at
     end_date = created_at + pd.Timedelta(minutes=num_to)
+
+    logger.debug(start_date)
+    logger.debug(end_date)
 
     pre_period = [
         str(start_date),
@@ -215,7 +221,7 @@ def display_row_details(
 
         card = create_tweet_selector_table(table_data, selected_row)
 
-        ci = create_causal_impact_figure(num_from, num_to, selected_row["created_at"])
+        ci = create_causal_impact_figure(selected_row["created_at"], num_from, num_to)
 
         ci.plot()
 
