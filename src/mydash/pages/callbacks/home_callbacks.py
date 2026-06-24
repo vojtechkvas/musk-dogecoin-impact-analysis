@@ -164,8 +164,8 @@ def _build_main_price_figure(
     Output("kpi-total-tweets", "children"),
     Output("kpi-avg-price", "children"),
     Output("kpi-avg-price-during-tweet", "children"),
-    Input("date-from-picker", "date"),
-    Input("date-to-picker", "date"),
+    Input("date-from-picker", "value"),
+    Input("date-to-picker", "value"),
     Input("text-filter-input", "value"),
 )
 def update_dashboard(date_from: str, date_to: str, text_filter: str) -> tuple[go.Figure, go.Figure, str, str, str]:
@@ -460,12 +460,12 @@ def create_tweet_impact_figure(
 
 
 @callback(
-    Output("date-to-picker", "date"),
+    Output("date-to-picker", "value"),
     [
         Input("mentionning-of-doge-department-button", "n_clicks"),
     ],
     [
-        State("date-to-picker", "date"),
+        State("date-to-picker", "value"),
     ],
     prevent_initial_call=True,
 )
