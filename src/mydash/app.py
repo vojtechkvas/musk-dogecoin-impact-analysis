@@ -9,10 +9,6 @@ from dash import Dash, DiskcacheManager
 
 
 from src.mydash import router
-from src.mydash.pages.callbacks import (  # pylint: disable=unused-import;
-    causalimpact_callbacks,
-    home_callbacks,
-)
 
 cache = diskcache.Cache("./cache")
 background_callback_manager = DiskcacheManager(cache)
