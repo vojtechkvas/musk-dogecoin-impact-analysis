@@ -48,14 +48,14 @@ Comprehensive exploratory data analysis and preprocessing workflows are provided
 Create virtual enviroment:
 
 ```bash
-python3.11 -m venv venv-bipyt
+python3.11 -m venv venv
 ```
 
 
 Start enviroment:
 
 ```bash
-source venv-bipyt/bin/activate
+source venv/bin/activate
 ```
 
 Install dependencies:
@@ -108,7 +108,7 @@ find . -type f -name "*.py" | xargs pylint --disable=C0301,C0103 -sn
 Before starting, navigate to your project directory and activate your virtual environment:
 
 ```bash
-source venv-bipyt/bin/activate
+source venv/bin/activate
 ```
 
 The quickest way to start a full notebook interface is by launching JupyterLab:
@@ -126,7 +126,7 @@ If you prefer working directly inside VS Code, you have two ways to connect:
 #### Method 1: Native VS Code Extension (Recommended)
 1. Open your `.ipynb` file directly in VS Code.
 2. Install the official **Jupyter** extension if prompted.
-3. Click **Select Kernel** in the top-right corner of the notebook and choose your active virtual environment (`venv-bipyt`).
+3. Click **Select Kernel** in the top-right corner of the notebook and choose your active virtual environment (`venv`).
 
 #### Method 2: Connect via Jupyter Server URL
 If you already started `jupyter lab` in your terminal, you can connect VS Code to that running server:
@@ -134,3 +134,17 @@ If you already started `jupyter lab` in your terminal, you can connect VS Code t
 1. Copy the URL with the token from your terminal logs (it will look like this):
 ```text
    http://localhost:8889/tree?token=fb702cccdd40cfd4f07a4ee8bf65561d34dfe958b62c6ba8
+```
+
+
+
+## Example of Empirical Results
+
+
+### Price Impact: Before vs After Tweets
+![Price Impact Analysis](images/price_impact.png)
+
+
+### Causal Impact Analysis
+SpaceX is going to put a literal Dogecoin on the literal moon
+![Causal Impact Analysis](images/causal_impact.png)
