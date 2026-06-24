@@ -74,6 +74,7 @@ main_layout = dbc.Container(
                             dbc.Label(
                                 "Quick date selection",
                                 className="fw-semibold fs-4",
+                                html_for="mentionning-of-doge-department-button",
                             ),
                             dbc.Button(
                                 "Set end date to first DOGE mention",
@@ -82,8 +83,7 @@ main_layout = dbc.Container(
                                 color="primary fs-5",
                             ),
                             html.Small(
-                                "Automatically sets the end date to the first "
-                                "date mentioning the DOGE department.",
+                                "Automatically sets the end date to the first date mentioning the DOGE department.",
                                 className="text-muted fs-5",
                             ),
                         ],
@@ -204,9 +204,7 @@ main_layout = dbc.Container(
                 dbc.Col(
                     dbc.Card(
                         [
-                            dbc.CardHeader(
-                                html.H4("Price and Tweet Volume Over Time")
-                            ),
+                            dbc.CardHeader(html.H4("Price and Tweet Volume Over Time")),
                             dbc.CardBody(
                                 dcc.Loading(
                                     id="loading-price-volume",
@@ -221,9 +219,7 @@ main_layout = dbc.Container(
                             dbc.CardFooter(
                                 html.Div(
                                     [
-                                        html.P(
-                                            "Activity peaked between 2021 and 2022. "
-                                        ),
+                                        html.P("Activity peaked between 2021 and 2022. "),
                                         html.P(
                                             "A preliminary visual inspection suggests that while "
                                             "individual tweets may cause short term volatility, "
@@ -245,11 +241,7 @@ main_layout = dbc.Container(
                 dbc.Col(
                     dbc.Card(
                         [
-                            dbc.CardHeader(
-                                html.H4(
-                                    "Individual Tweet Impact (Relative Time and Price)"
-                                )
-                            ),
+                            dbc.CardHeader(html.H4("Individual Tweet Impact (Relative Time and Price)")),
                             dbc.CardBody(
                                 dcc.Loading(
                                     id="loading-tweet-impact",
