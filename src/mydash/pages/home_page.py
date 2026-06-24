@@ -97,19 +97,21 @@ main_layout = dbc.Container(
                     dbc.Stack(
                         [
                             dbc.Label(
-                                "Date from",
-                                html_for="date-from-picker",
+                                [
+                                    "Date from",
+                                    dcc.DatePickerSingle(
+                                        id="date-from-picker",
+                                        min_date_allowed=DOGE_MIN_DATE,
+                                        max_date_allowed=DOGE_MAX_DATE,
+                                        initial_visible_month=DOGE_MIN_DATE,
+                                        date=DOGE_MIN_DATE,
+                                        placeholder="Select start date",
+                                        calendar_orientation="vertical",
+                                        className="fs-5",
+                                    ),
+                                ],
+                                #  html_for="date-from-picker",
                                 className="fw-semibold fs-4",
-                            ),
-                            dcc.DatePickerSingle(
-                                id="date-from-picker",
-                                min_date_allowed=DOGE_MIN_DATE,
-                                max_date_allowed=DOGE_MAX_DATE,
-                                initial_visible_month=DOGE_MIN_DATE,
-                                date=DOGE_MIN_DATE,
-                                placeholder="Select start date",
-                                calendar_orientation="vertical",
-                                className="fs-5",
                             ),
                             html.Small(
                                 "Start date for DOGE data filtering",
@@ -125,19 +127,21 @@ main_layout = dbc.Container(
                     dbc.Stack(
                         [
                             dbc.Label(
-                                "Date to",
-                                html_for="date-to-picker",
+                                [
+                                    "Date to",
+                                    dcc.DatePickerSingle(
+                                        id="date-to-picker",
+                                        min_date_allowed=DOGE_MIN_DATE,
+                                        max_date_allowed=DOGE_MAX_DATE,
+                                        initial_visible_month=DOGE_MAX_DATE,
+                                        date=DOGE_MAX_DATE,
+                                        placeholder="Date To",
+                                        calendar_orientation="vertical",
+                                        className="fs-5",
+                                    ),
+                                ],
+                                #   html_for="date-to-picker",
                                 className="fw-semibold fs-4",
-                            ),
-                            dcc.DatePickerSingle(
-                                id="date-to-picker",
-                                min_date_allowed=DOGE_MIN_DATE,
-                                max_date_allowed=DOGE_MAX_DATE,
-                                initial_visible_month=DOGE_MAX_DATE,
-                                date=DOGE_MAX_DATE,
-                                placeholder="Date To",
-                                calendar_orientation="vertical",
-                                className="fs-5",
                             ),
                             html.Small(
                                 "End date for DOGE data filtering",

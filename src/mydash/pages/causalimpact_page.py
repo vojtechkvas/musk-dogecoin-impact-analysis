@@ -187,7 +187,7 @@ layout = dbc.Container(
                         [
                             dbc.Label(
                                 "Minutes before tweet",
-                                html_for="date-from-picker",
+                                html_for="num-from-input-causalimpact",
                                 className="fw-semibold fs-4",
                             ),
                             dbc.Input(
@@ -215,7 +215,7 @@ layout = dbc.Container(
                         [
                             dbc.Label(
                                 "Minutes after tweet",
-                                html_for="date-to-picker",
+                                html_for="num-to-input-causalimpact",
                                 className="fw-semibold fs-4",
                             ),
                             dbc.Input(
