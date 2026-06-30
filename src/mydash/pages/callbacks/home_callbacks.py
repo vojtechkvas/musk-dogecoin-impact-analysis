@@ -195,7 +195,6 @@ def update_dashboard(date_from: str, date_to: str, text_filter: str) -> tuple[go
             "Please select both a start and end date.",
             "N/A",
             "N/A",
-            "N/A",
         )
     date_from_timestamp = formatters.convert_date_to_timestamp(date_from)
     date_to_timestamp = formatters.convert_date_to_timestamp(date_to)
@@ -212,11 +211,9 @@ def update_dashboard(date_from: str, date_to: str, text_filter: str) -> tuple[go
 
     coin_tweet_df = processing.filter_tweets_by_keyword(coin_tweet_df, text_filter)
 
-    print(coin_tweet_df.shape)
     coin_tweet_df = coin_tweet_df[
         ~coin_tweet_df["is_retweet"] & ~coin_tweet_df["is_quote"] & ~coin_tweet_df["is_reply"]
     ]
-    print(coin_tweet_df.shape)
 
     fig, full_hovertemplate, colors = _build_main_price_figure(coin_stock_df, coin_tweet_df)
 
