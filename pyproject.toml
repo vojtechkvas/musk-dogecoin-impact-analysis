@@ -1,0 +1,16 @@
+[project]
+name = "musk-dogecoin-impact-analysis"
+version = "0.1.0"
+description = "Analyzing the impact of Elon Musk's tweets on Dogecoin using Bayesian Structural Time-Series. This repository features an interactive Dash dashboard for causal inference and historical data visualization."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dash-bootstrap-components>=2.0.4",
+    "dash[diskcache]>=4.3.0",
+    "diskcache>=5.6.3",
+    "tfcausalimpact>=0.0.18",
+]
+authors = [
+    { name = "Vojtěch Kváš", email = "vojtechkvas1@gmail.com" }
+]
+license = { file = "LICENSE" }
