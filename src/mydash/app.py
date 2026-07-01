@@ -7,10 +7,9 @@ import dash_bootstrap_components as dbc
 import diskcache
 from dash import Dash, DiskcacheManager
 
-
 from src.mydash import router
 
-cache = diskcache.Cache("./cache")
+cache = diskcache.Cache("./.cache")
 background_callback_manager = DiskcacheManager(cache)
 
 
